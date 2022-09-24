@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 02:58:58 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/24 03:01:45 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 #include <vector>
 #include <typeinfo>
 #include "type_traits.hpp"
+
+namespace TOML
+{
 
 class bad_type : public std::exception
 {
@@ -152,23 +155,4 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 	return out;
 }
 
-const char* typeToChar(Value::e_type type)
-{
-	switch (type)
-	{
-		case Value::T_INT:
-			return ("Int");
-		case Value::T_FLOAT:
-			return ("Float");
-		case Value::T_BOOL:
-			return ("Bool");
-		case Value::T_STRING:
-			return ("String");
-		case Value::T_GROUP:
-			return ("Group");
-		case Value::T_UNDEF:
-			return ("Undefined");
-		default:
-			return ("unknown type");
-	}
-}
+} // namespace TOML

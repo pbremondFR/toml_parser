@@ -10,6 +10,8 @@
 
 #define P_TYPE(x) (typeToChar(x))
 
+using namespace TOML; // yeah yeah I know, it's testing, gimme a break
+
 inline void	newtest(void)
 {
 	static int	i(1);
@@ -60,6 +62,26 @@ class Integer : public Base
 
 };
 
+const char* typeToChar(Value::e_type type)
+{
+	switch (type)
+	{
+		case Value::T_INT:
+			return ("Int");
+		case Value::T_FLOAT:
+			return ("Float");
+		case Value::T_BOOL:
+			return ("Bool");
+		case Value::T_STRING:
+			return ("String");
+		case Value::T_GROUP:
+			return ("Group");
+		case Value::T_UNDEF:
+			return ("Undefined");
+		default:
+			return ("unknown type");
+	}
+}
 
 int	main(void)
 {
@@ -90,7 +112,6 @@ int	main(void)
 		std::vector<Base>	vecbase;
 		vecbase.push_back(Integer(42));
 		vecbase.push_back(String());
-		vecbase.push_back(Integer(42));
 
 		Base*	test = &vecbase[0];
 		std::cout << P_TYPE(test->getType()) << std::endl;
@@ -98,9 +119,6 @@ int	main(void)
 		std::cout << P_TYPE(test2->getType()) << std::endl;
 		Integer &test3 = dynamic_cast<Integer&>(vecbase[0]);
 		std::cout << P_TYPE(test3.getType()) << std::endl;
-
-		// for (size_t i = 0; i < vecbase.size(); ++i)
-		// 	std::cout << P_TYPE(vecbase[i]->getType()) << std::endl;
 	}
 	catch (std::exception const& e)
 	{
