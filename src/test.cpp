@@ -84,8 +84,12 @@ const char* typeToChar(Value::e_type type)
 	}
 }
 
-int	main(void)
+int	main(int argc, const char *argv[])
 {
+	if (argc != 2) {
+		std::cerr << "Bruh" << std::endl;
+		return 1;
+	}
 	newtest();
 	{
 		Base* base1 = static_cast<Base*>(new Integer(42));
@@ -164,6 +168,14 @@ int	main(void)
 			std::cout << i << " - " << "Type: " << P_TYPE(vec[i].type())
 				<< " | " << "Value: " << vec[i] << std::endl;
 		}
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		std::cout << P_TYPE( doc[0].type() ) << std::endl;
+		std::cout << '['<<doc[0]<<']' << std::endl;
+		std::cout << '['<<doc[1]<<']' << std::endl;
 	}
 	return 0;
 }

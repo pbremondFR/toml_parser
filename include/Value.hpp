@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 03:01:45 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/24 07:02:01 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 
 namespace TOML
 {
+
+class Document;
 
 class bad_type : public std::exception
 {
@@ -49,6 +51,7 @@ class Value
 		};
 
 	private:
+		friend class Document; // TODO: Remove me when everything is done, if possible
 		// Possible types that the value can be
 		e_type	_type;
 		union
@@ -135,6 +138,16 @@ class Value
 				return false;
 			return true;
 			// throw (bad_type("tried to set non-group Value to group"));
+		}
+
+		void	group_addValue(Value const& val)
+		{
+			if (!isGroup())
+				return; // TODO: bruh
+			for (std::vector<Value>::const_iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
+				if (it->key() == val.key())
+					return ;
+			_hashmap.push_back(val);
 		}
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
