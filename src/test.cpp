@@ -8,8 +8,9 @@
 #include "../include/Value.hpp"
 #include "../include/Document.hpp"
 
-
-#define P_TYPE(x) (typeToChar(x))
+#ifndef P_TYPE
+# define P_TYPE(x) (TOML::typeToChar(x))
+#endif
 
 using namespace TOML; // yeah yeah I know, it's testing, gimme a break
 
@@ -62,27 +63,6 @@ class Integer : public Base
 		value_type const&	getInt() const  { return _val; }
 
 };
-
-const char* typeToChar(Value::e_type type)
-{
-	switch (type)
-	{
-		case Value::T_INT:
-			return ("Int");
-		case Value::T_FLOAT:
-			return ("Float");
-		case Value::T_BOOL:
-			return ("Bool");
-		case Value::T_STRING:
-			return ("String");
-		case Value::T_GROUP:
-			return ("Group");
-		case Value::T_UNDEF:
-			return ("Undefined");
-		default:
-			return ("unknown type");
-	}
-}
 
 int	main(int argc, const char *argv[])
 {
@@ -173,9 +153,11 @@ int	main(int argc, const char *argv[])
 	{
 		Document	doc(argv[1]);
 		doc.parse();
-		std::cout << P_TYPE( doc[0].type() ) << std::endl;
-		std::cout << '['<<doc[0]<<']' << std::endl;
-		std::cout << '['<<doc[1]<<']' << std::endl;
+		std::cout << P_TYPE( doc["rootString"].type() ) << std::endl;
+		std::cout << '['<<doc["rootString"]<<']' << std::endl;
+		Document	maindoc = doc["main"];
+		std::cout << '['<<doc["main"]<<']' << std::endl;
+		// std::cout << '['<<doc["bool"]<<']' << std::endl;
 	}
 	return 0;
 }

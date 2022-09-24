@@ -1,2 +1,5 @@
-string = "Hello, world!"
-int = 42
+rootString = "Hello, world!"
+[main]
+int = 42 # test comment
+[main.sub.one]
+bool = true# test comment

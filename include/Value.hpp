@@ -6,16 +6,22 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 07:02:01 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/24 18:38:38 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+// #ifndef VALUE_HPP
+// #define VALUE_HPP
 
 #include <string>
 #include <vector>
 #include <typeinfo>
 #include "type_traits.hpp"
+
+#ifndef P_TYPE
+# define P_TYPE(x) (typeToChar(x))
+#endif
 
 namespace TOML
 {
@@ -32,6 +38,7 @@ class bad_type : public std::exception
 		virtual const char	*what() const throw() { return (_msg); }
 };
 
+// TODO: comparison operators ? Only compare keys ?
 class Value
 {
 	public:
@@ -49,6 +56,7 @@ class Value
 			T_GROUP,
 			T_UNDEF
 		};
+		typedef typename	std::size_t		size_type;
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
@@ -83,13 +91,16 @@ class Value
 
 		inline e_type		type() const { return _type; }
 
-		inline bool_type	isInt()		const { return (_type == T_INT);		}
+		inline bool_type	isInt()		const { return (_type == T_INT);	}
 		inline bool_type	isFloat()	const { return (_type == T_FLOAT);	}
-		inline bool_type	isBool()	const { return (_type == T_BOOL);		}
+		inline bool_type	isBool()	const { return (_type == T_BOOL);	}
 		inline bool_type	isStr()		const { return (_type == T_STRING);	}
 		inline bool_type	isGroup()	const { return (_type == T_GROUP);	}
 
 		inline bool_type	isFundamental() const { return (isInt() || isFloat()); }
+
+		inline size_type	strSize()	const { if (isStr())	return _str.size();		throw (bad_type("Value::strSize()"));	}
+		inline size_type	groupSize()	const { if (isGroup())	return _hashmap.size();	throw (bad_type("Value::groupSize()"));	}
 
 		inline int_type&			Int()	{ if (isInt())	 return _int;	throw (bad_type("Value::Int()"));	}
 		inline float_type&			Float()	{ if (isFloat()) return _float;	throw (bad_type("Value::Float()"));	}
@@ -140,14 +151,37 @@ class Value
 			// throw (bad_type("tried to set non-group Value to group"));
 		}
 
-		void	group_addValue(Value const& val)
+		// bool	group_addValue(Value const& val)
+		// {
+		// 	if (!isGroup()) {
+		// 		throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
+		// 	}
+		// 	for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it) {
+		// 		if (val._type == T_GROUP && it->_type == T_GROUP && it->groupSize() == 0) {
+		// 			*it = val; // If empty group, assign it the given value
+		// 			return true;
+		// 		}
+		// 		if (it->key() == val.key())
+		// 			return false;
+		// 	}
+		// 	_hashmap.push_back(val);
+		// 	return true;
+		// }
+		Value	*group_addValue(Value const& val)
 		{
-			if (!isGroup())
-				return; // TODO: bruh
-			for (std::vector<Value>::const_iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
-				if (it->key() == val.key())
-					return ;
+			if (!this->isGroup()) {
+				throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
+			}
+			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it) {
+				if (val._type == T_GROUP && it->_type == T_GROUP && it->groupSize() == 0) {
+					*it = val; // If empty group, assign it the given value
+					return it.operator->();
+				}
+				else if (it->key() == val.key())
+					return NULL;
+			}
 			_hashmap.push_back(val);
+			return (_hashmap.end() - 1).operator->();
 		}
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
@@ -168,4 +202,27 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 	return out;
 }
 
+const char* typeToChar(TOML::Value::e_type type)
+{
+	switch (type)
+	{
+		case TOML::Value::T_INT:
+			return ("Int");
+		case TOML::Value::T_FLOAT:
+			return ("Float");
+		case TOML::Value::T_BOOL:
+			return ("Bool");
+		case TOML::Value::T_STRING:
+			return ("String");
+		case TOML::Value::T_GROUP:
+			return ("Group");
+		case TOML::Value::T_UNDEF:
+			return ("Undefined");
+		default:
+			return ("unknown type");
+	}
+}
+
 } // namespace TOML
+
+// #endif
