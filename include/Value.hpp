@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 18:38:38 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/24 19:42:28 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ class Value
 		// 	_hashmap.push_back(val);
 		// 	return true;
 		// }
-		Value	*group_addValue(Value const& val)
+		Value	*group_addValue(Value const& val) // FIXME: Bad logic
 		{
 			if (!this->isGroup()) {
 				throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
@@ -197,6 +197,8 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 		out << (val._bool == true ? "true" : "false");
 	else if (val.isStr())
 		out << val._str;
+	else if (val.isGroup())
+		out << "GROUP: TODO";
 	else
 		out << "TODO";
 	return out;

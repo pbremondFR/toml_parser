@@ -1,5 +1,5 @@
 rootString = "Hello, world!"
 [main]
 int = 42 # test comment
-[main.sub.one]
+[main.sub]
 bool = true# test comment

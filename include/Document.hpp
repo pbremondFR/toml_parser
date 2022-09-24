@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 18:51:21 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/24 19:42:34 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ class Document
 	private:
 		Value			_root;
 		Value			*_currentGroup;
-		std::ifstream	_fs;
+		std::string		_path;
 		bool			_isParsed;
 
 	private:
@@ -57,8 +57,6 @@ class Document
 		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end)
 		{
 			for (; it != end && _isSpace(*it); ++it) ;
-			// do { ++it; } while (it != end && _isSpace(*it));
-			
 		}
 		static inline bool	_isBareKeyChar(char c) { return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_'); }
 
@@ -94,14 +92,10 @@ class Document
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
-		Document(std::string const& path) : _root(Value("")),	_currentGroup(&_root), _fs(path.c_str()),	_isParsed(false) {}
-		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _fs(path),			_isParsed(false) {}
-		Document(Value const& value)	  : _root(value),		_currentGroup(&_root), _fs(), _isParsed(true) {} 
-		~Document()
-		{
-			if (_fs.is_open())
-				_fs.close();
-		}
+		Document(std::string const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document(Value const& value)	  : _root(value),		_currentGroup(&_root), _path(),		_isParsed(true) {} 
+		~Document() { }
 
 		Value&			at(std::string const& key)
 		{
@@ -128,10 +122,7 @@ class Document
 			return *it;
 		}
 
-		inline void	open(const char *path, std::ios_base::openmode mode = std::ios_base::in)
-		{
-			_fs.open(path, mode);
-		}
+		bool	parse(std::string const& path);
 		bool	parse();
 };
 
@@ -139,13 +130,25 @@ class Document
 // ------------------------------------------          ------------------------------------------ //
 // ============================================================================================== //
 
+bool	Document::parse(std::string const& path)
+{
+	if (_isParsed)
+		return false;
+	_path = path;
+	return this->parse();
+}
+
 bool	Document::parse()
 {
 	if (_isParsed)
 		return false;
 	
+	std::ifstream	fs(_path.c_str());
+	if (!fs.is_open())
+		return false; // TODO: Exception handling
+
 	std::size_t	lineNum = 1;
-	for (std::string line; std::getline(_fs, line); ++lineNum)
+	for (std::string line; std::getline(fs, line); ++lineNum)
 	{
 		std::string::const_iterator	it = line.begin();
 		_skipWhitespaces(it, line.end());
@@ -155,11 +158,10 @@ bool	Document::parse()
 		
 		else if (*it == '[')
 		{
-			// TODO, group logic
 			_parseGroup(++it, line, lineNum);
 		}
-		// Insert quoted keys, table groups, etc, here
-		else // key/value logic
+		// Insert quoted keys, groups tables, etc, here
+		else
 		{
 			_parseKeyValue(it, line, lineNum);
 		}
@@ -168,6 +170,7 @@ bool	Document::parse()
 	return true;
 }
 
+// TODO: Finish me, TESTME
 void	Document::_parseGroup(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
 	std::string::const_iterator	it = std::find(src_it, line.end(), ']');
@@ -181,6 +184,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 		if ((!_isBareKeyChar(*keyIt) && *keyIt != '.'))
 			throw (parse_error("Illegal group key character", lineNum));
 	}
+	_currentGroup = &_root;
 	keyIt = key.begin();
 	std::string::const_iterator	dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
 	do
@@ -188,14 +192,13 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 		std::string	subkey(keyIt, dot);
 		std::cout << "#" << subkey << std::endl;
 		_currentGroup = _currentGroup->group_addValue(Value(subkey));
-		if (_currentGroup == NULL)
+		if (_currentGroup == NULL) // FIXME: Bad logic
 			throw (parse_error("Illegal group declaration", lineNum));
 		keyIt = (dot == key.end() ? dot : dot + 1);
 		dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
 		// std::cout << "DEBUG ME" << std::endl;
 	} while (keyIt != key.end());
 	// std::cout << "DEBUG ME 2" << std::endl;
-	_currentGroup = &_root;
 }
 
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
@@ -221,7 +224,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			std::string::const_iterator	last = std::find(++it,
 					std::string::const_iterator(line.end()), '\"');
 			if (last != line.end())
-				_root.group_addValue( Value(key, std::string(it, last)) );
+				_currentGroup->group_addValue( Value(key, std::string(it, last)) );
 			else
 				throw (parse_error("Missing `\"' at the end of a string at line ", lineNum));
 			_skipWhitespaces(last, line.end());
@@ -237,7 +240,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			_skipWhitespaces(it, line.end());
 			if (it != line.end() && *it != '#')
 				throw (parse_error("Illegal integer value", lineNum));
-			_root.group_addValue(Value(key, val, Value::T_INT));
+			_currentGroup->group_addValue(Value(key, val, Value::T_INT));
 			break;
 		}
 		case FLOAT:
@@ -248,7 +251,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			_skipWhitespaces(it, line.end());
 			if (it != line.end() && *it != '#')
 				throw (parse_error("Illegal floating point value", lineNum));
-			_root.group_addValue(Value(key, val, Value::T_FLOAT));
+			_currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
 			break;
 		}
 		case BOOL:
@@ -263,7 +266,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			if (last != line.end() && *last != '#')
 				throw (parse_error("Illegal boolean value", lineNum));
 			val = (tmp == "true" ? true : false);
-			_root.group_addValue(Value(key, val, Value::T_BOOL));
+			_currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
 			break;
 		}
 		case DATE:
