@@ -6,6 +6,7 @@
 
 #include "../include/unique_ptr.hpp"
 #include "../include/Value.hpp"
+#include "../include/Document.hpp"
 
 
 #define P_TYPE(x) (typeToChar(x))
