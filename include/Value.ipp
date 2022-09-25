@@ -6,13 +6,17 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 14:00:26 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 17:54:56 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "Value.hpp"
+
+// ============================================================================================== //
+// --------------------------------------- PUBLIC METHODS --------------------------------------- //
+// ============================================================================================== //
 
 Value::Value(string_type const& key, float_type floating, e_type type) : _type(type), _key(key)
 {
@@ -41,7 +45,7 @@ Value*	Value::_getOrAddSubtable(Value const& group)
 	return (_hashmap.end() - 1).operator->();
 }
 
-Value&			Value::operator[](std::string const& key)
+Value&			Value::at(std::string const& key)
 {
 	if (!isGroup())
 		throw (bad_type("Value::operator[] called with non-Group type"));
@@ -49,7 +53,7 @@ Value&			Value::operator[](std::string const& key)
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
 	return *it;
 }
-Value const&	Value::operator[](std::string const& key) const
+Value const&	Value::at(std::string const& key) const
 {
 	if (!isGroup())
 		throw (bad_type("Value::operator[] called with non-Group type"));
@@ -58,7 +62,20 @@ Value const&	Value::operator[](std::string const& key) const
 	return *it;
 }
 
-Value::bool_type	Value::set(float_type floating)
+Value&			Value::operator[](std::string const& key) noexcept
+{
+	std::vector<Value>::iterator it;
+	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	return *it;
+}
+Value const&	Value::operator[](std::string const& key) const noexcept
+{
+	std::vector<Value>::const_iterator it;
+	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	return *it;
+}
+
+Value::bool_type	Value::set(float_type floating) noexcept
 {
 	if (isInt())
 		_int = static_cast<int_type>(floating);
@@ -68,7 +85,6 @@ Value::bool_type	Value::set(float_type floating)
 		_float = floating;
 	else
 		return false;
-		// throw (bad_type("tried to set fundamental Value with non-fundamental variable"));
 	return true;
 }
 
@@ -79,7 +95,6 @@ Value::bool_type	Value::set(string_type const& string)
 	else
 		return false;
 	return true;
-	// throw (bad_type("tried to set non-string Value to string"));
 }
 
 Value::bool_type	Value::set(group_type const& group)
@@ -89,7 +104,6 @@ Value::bool_type	Value::set(group_type const& group)
 	else
 		return false;
 	return true;
-	// throw (bad_type("tried to set non-group Value to group"));
 }
 
 Value*	Value::group_addValue(Value const& val) // TESTME

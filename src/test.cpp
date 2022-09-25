@@ -4,7 +4,7 @@
 #include <map>
 #include <typeinfo>
 
-#include "../include/unique_ptr.hpp"
+// #include "../include/unique_ptr.hpp"
 #include "../include/Value.hpp"
 #include "../include/Document.hpp"
 
@@ -36,7 +36,7 @@ class Base
 class String : public Base
 {
 	public:
-		typedef typename	std::string		value_type;
+		typedef		std::string		value_type;
 
 	private:
 		value_type	_val;
@@ -136,7 +136,7 @@ int	main(int argc, const char *argv[])
 	newtest();
 	{
 		std::vector<Value>	vec;
-		vec.push_back(Value("group"));
+		vec.push_back(Value("group", NULL));
 		vec.push_back(Value("test", 42, Value::T_INT));
 		vec.push_back(Value("test", 42, Value::T_FLOAT));
 		vec.push_back(Value("test", false, Value::T_BOOL));

@@ -6,13 +6,29 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 14:09:36 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 19:51:03 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "Document.hpp"
+
+// ============================================================================================== //
+// ------------------------------------------ ITERATOR ------------------------------------------ //
+// ============================================================================================== //
+
+// Go through hasmap. If you find a group, go in it. If you're at the end of the hashmap,
+// go to the parent group of the current group.
+template < class T >
+DocumentIterator<T>&	DocumentIterator<T>::operator++()
+{
+	assert(_root->isGroup());
+}
+
+// ============================================================================================== //
+// --------------------------------------- PUBLIC METHODS --------------------------------------- //
+// ============================================================================================== //
 
 Document::e_value_type
 	Document::_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end)
@@ -37,6 +53,14 @@ Document::e_value_type
 Value&			Document::at(std::string const& key)
 {
 	for (std::vector<Value>::iterator it = _root._hashmap.begin(); it != _root._hashmap.end(); ++it)
+		if (it->_key == key)
+			return *it;
+	throw (std::out_of_range("TOML::Document::at(): std::out_of_range"));
+}
+
+Value const&	Document::at(std::string const& key) const
+{
+	for (std::vector<Value>::const_iterator it = _root._hashmap.begin(); it != _root._hashmap.end(); ++it)
 		if (it->_key == key)
 			return *it;
 	throw (std::out_of_range("TOML::Document::at(): std::out_of_range"));
@@ -99,7 +123,7 @@ bool	Document::parse()
 // TODO: Finish me, TESTME
 void	Document::_parseGroup(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
-	typedef typename	std::string::const_iterator		str_const_it;
+	typedef	std::string::const_iterator		str_const_it;
 	
 	str_const_it	it = std::find(src_it, line.end(), ']');
 	if (it == line.end())
@@ -123,7 +147,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 		std::string	subkey(keyIt, dot);
 		if (subkey.length() == 0)
 			throw (parse_error("Empty key", lineNum));
-		_currentGroup = _currentGroup->_getOrAddSubtable(Value(subkey));
+		_currentGroup = _currentGroup->_getOrAddSubtable(Value(subkey, _currentGroup));
 		if (_currentGroup == NULL)
 			throw (parse_error("Redeclared key", lineNum));
 		keyIt = dot + 1;
@@ -133,7 +157,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	std::string lastKey (ItLastKey, str_const_it(key.end())); // mfw no cend()
 	if (lastKey.length() == 0)
 		throw (parse_error("Empty key", lineNum));
-	_currentGroup = _currentGroup->group_addValue(Value(lastKey));
+	_currentGroup = _currentGroup->group_addValue(Value(lastKey, _currentGroup));
 	if (_currentGroup == NULL)
 		throw (parse_error("Redeclared key", lineNum));
 	_currentGroup->_undefinedGroup = false;
@@ -141,7 +165,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
-	typedef typename	std::string::const_iterator		str_const_it;
+	typedef	std::string::const_iterator		str_const_it;
 	
 	// Get the key
 	str_const_it	it = src_it;
@@ -174,7 +198,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 		case INT:
 		{
 			Value::int_type	val;
-			std::sscanf(it.base(), "%ld", &val); // Just rewrite your own func, dude
+			std::sscanf(it.base(), "%lld", &val); // Just rewrite your own func, dude
 			for (; it != line.end() && (isdigit(*it) || *it == '-'); ++it) ;
 			_skipWhitespaces(it, line.end());
 			if (it != line.end() && *it != '#')
