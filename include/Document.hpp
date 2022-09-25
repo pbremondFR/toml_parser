@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 02:06:14 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 12:57:52 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,20 +173,21 @@ bool	Document::parse()
 // TODO: Finish me, TESTME
 void	Document::_parseGroup(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
-	std::string::const_iterator	it = std::find(src_it, line.end(), ']');
+	typedef typename	std::string::const_iterator		str_const_it;
+	
+	str_const_it	it = std::find(src_it, line.end(), ']');
 	if (it == line.end())
 		throw(parse_error("Invalid group definition (missing `]')", lineNum));
 	std::string	key(src_it, it);
-	std::string::const_iterator keyIt;
+	str_const_it keyIt;
 	for (keyIt = key.begin(); keyIt != key.end(); ++keyIt) {
 		if ((!_isBareKeyChar(*keyIt) && *keyIt != '.'))
 			throw (parse_error("Illegal group key character", lineNum));
 	}
 	_currentGroup = &_root;
 	keyIt = key.begin();
-	std::string::const_iterator	dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
-	std::string::const_iterator ItLastKey
-		= (key.find_last_of('.') == std::string::npos ? keyIt : key.begin() + key.find_last_of('.') + 1);
+	str_const_it	dot = std::find(keyIt, str_const_it(key.end()), '.');
+	str_const_it ItLastKey = (key.find_last_of('.') == std::string::npos ? keyIt : key.begin() + key.find_last_of('.') + 1);
 
 	while (keyIt != ItLastKey) // Go through all subkeys
 	{
@@ -197,10 +198,10 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 		if (_currentGroup == NULL)
 			throw (parse_error("Redeclared key", lineNum));
 		keyIt = dot + 1;
-		dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
+		dot = std::find(keyIt, str_const_it(key.end()), '.');
 	}
 	// Parse last key
-	std::string lastKey (ItLastKey, std::string::const_iterator(key.end())); // fuck you C++98
+	std::string lastKey (ItLastKey, str_const_it(key.end())); // fuck you C++98
 	if (lastKey.length() == 0)
 		throw (parse_error("Empty key", lineNum));
 	_currentGroup = _currentGroup->group_addValue(Value(lastKey));
@@ -211,8 +212,10 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
+	typedef typename	std::string::const_iterator		str_const_it;
+	
 	// Get the key
-	std::string::const_iterator	it = src_it;
+	str_const_it	it = src_it;
 	for (; it != line.end() && _isBareKeyChar(*it); ++it) ;
 	if (!_isSpace(*it) && *it != '#' && *it != '=')
 		throw (parse_error("Illegal key character at line ", lineNum));
@@ -229,8 +232,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 	{
 		case STRING:
 		{ // TODO: unicode, yes or no ? Escaping as well
-			std::string::const_iterator	last = std::find(++it,
-					std::string::const_iterator(line.end()), '\"');
+			str_const_it last = std::find(++it, str_const_it(line.end()), '\"');
 			if (last != line.end())
 				_currentGroup->group_addValue( Value(key, std::string(it, last)) );
 			else
@@ -265,8 +267,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 		case BOOL:
 		{ // FIXME, Shit code but I'm tired
 			Value::bool_type	val;
-			std::string::const_iterator	last = std::find(it,
-					std::string::const_iterator(line.end()), 'e');
+			str_const_it last = std::find(it, str_const_it(line.end()), 'e');
 			std::string	tmp(it, ++last);
 			if (tmp != "true" && tmp != "false") // yeah that bugs
 				throw (parse_error("Illegal boolean value", lineNum));
