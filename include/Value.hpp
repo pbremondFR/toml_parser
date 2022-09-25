@@ -6,13 +6,13 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 02:07:33 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 14:02:32 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
-// #ifndef VALUE_HPP
-// #define VALUE_HPP
+// #pragma once
+#ifndef VALUE_HPP
+#define VALUE_HPP
 
 #include <string>
 #include <vector>
@@ -79,36 +79,13 @@ class Value
 
 		// Returns pointer to inserted or found subtable. Does not protect against double insert.
 		// Only meant to be used in Document class
-		Value	*_getOrAddSubtable(Value const& group)
-		{
-			assert(isGroup() && group.isGroup());
-
-			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
-			{
-				if (group._key == it->_key && it->isGroup()) // Found subgroup
-					return (it.operator->());
-				else if (group._key == it->_key) // Key conflicts with other key
-					return NULL;
-			}
-			_hashmap.push_back(group);
-			return (_hashmap.end() - 1).operator->();
-		}
+		Value	*_getOrAddSubtable(Value const& group);
 
 	public:
-		explicit Value(string_type const& key, float_type floating, e_type type) : _type(type), _key(key)
-		{
-			if (_type == T_INT)
-				_int = static_cast<int_type>(floating);
-			else if (_type == T_BOOL)
-				_bool = static_cast<bool_type>(floating);
-			else if (_type == T_FLOAT)
-				_float = floating;
-			else
-				throw (bad_type("tried to construct fundamental value with non-fundamental type"));
-		}
+		explicit Value(string_type const& key, float_type floating, e_type type);
 		         Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
 		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) {}
-		// TODO: operator=, copy constructor ?
+		// TODO: operator=, copy constructor? They're compiler provided for now, test them.
 
 		inline e_type		type() const { return _type; }
 
@@ -138,116 +115,22 @@ class Value
 		inline string_type&			key()		{ return _key; }
 		inline string_type const&	key() const	{ return _key; }
 
+		Value&			operator[](std::string const& key);
+		Value const&	operator[](std::string const& key) const;
+
 		// TODO: When an incorrect set method is called, should it throw, or should it return false ?
 		// NOTE: Ah fuck it's not typesafe at all
-		inline bool_type	set(float_type floating)
-		{
-			if (isInt())
-				_int = static_cast<int_type>(floating);
-			else if (isBool())
-				_bool = static_cast<bool_type>(floating);
-			else if (isFloat())
-				_float = floating;
-			else
-				return false;
-				// throw (bad_type("tried to set fundamental Value with non-fundamental variable"));
-			return true;
-		}
-		inline bool_type	set(string_type const& string)
-		{
-			if (isStr())
-				_str = string;
-			else
-				return false;
-			return true;
-			// throw (bad_type("tried to set non-string Value to string"));
-		}
-		inline bool_type	set(group_type const& group)
-		{
-			if (isGroup())
-				*this = group;
-			else
-				return false;
-			return true;
-			// throw (bad_type("tried to set non-group Value to group"));
-		}
+		bool_type	set(float_type floating);
+		bool_type	set(string_type const& string);
+		bool_type	set(group_type const& group);
 
-		// bool	group_addValue(Value const& val)
-		// {
-		// 	if (!isGroup()) {
-		// 		throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
-		// 	}
-		// 	for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it) {
-		// 		if (val._type == T_GROUP && it->_type == T_GROUP && it->groupSize() == 0) {
-		// 			*it = val; // If empty group, assign it the given value
-		// 			return true;
-		// 		}
-		// 		if (it->key() == val.key())
-		// 			return false;
-		// 	}
-		// 	_hashmap.push_back(val);
-		// 	return true;
-		// }
-		Value	*group_addValue(Value const& val) // FIXME: Bad logic
-		{
-			if (!this->isGroup()) {
-				throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
-			}
-			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
-			{
-				if (it->_key == val.key())
-				{
-					if (val._type == T_GROUP && it->_type == T_GROUP && it->_undefinedGroup == true)
-						return it.operator->();
-					else
-						return NULL;
-				}
-			}
-			_hashmap.push_back(val);
-			return (_hashmap.end() - 1).operator->();
-		}
+		Value	*group_addValue(Value const& val); // TESTME: logic
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
 };
 
-std::ostream&	operator<<(std::ostream& out, Value const& val)
-{
-	if (val.isInt())
-		out << val._int;
-	else if (val.isFloat())
-		out << val._float;
-	else if (val.isBool())
-		out << (val._bool == true ? "true" : "false");
-	else if (val.isStr())
-		out << val._str;
-	else if (val.isGroup())
-		out << "GROUP: TODO";
-	else
-		out << "TODO";
-	return out;
-}
-
-const char* typeToChar(TOML::Value::e_type type)
-{
-	switch (type)
-	{
-		case TOML::Value::T_INT:
-			return ("Int");
-		case TOML::Value::T_FLOAT:
-			return ("Float");
-		case TOML::Value::T_BOOL:
-			return ("Bool");
-		case TOML::Value::T_STRING:
-			return ("String");
-		case TOML::Value::T_GROUP:
-			return ("Group");
-		case TOML::Value::T_UNDEF:
-			return ("Undefined");
-		default:
-			return ("unknown type");
-	}
-}
+#include "Value.ipp"
 
 } // namespace TOML
 
-// #endif
+#endif
