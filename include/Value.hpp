@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 19:42:28 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 02:07:33 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <typeinfo>
+#include <cassert>
 #include "type_traits.hpp"
 
 #ifndef P_TYPE
@@ -73,6 +74,26 @@ class Value
 
 		string_type		_key;
 
+		bool	_undefinedGroup; // If the group has only been put there automatically,
+								 // i.e if it was a subgroup in a [a.b.c] declaration
+
+		// Returns pointer to inserted or found subtable. Does not protect against double insert.
+		// Only meant to be used in Document class
+		Value	*_getOrAddSubtable(Value const& group)
+		{
+			assert(isGroup() && group.isGroup());
+
+			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
+			{
+				if (group._key == it->_key && it->isGroup()) // Found subgroup
+					return (it.operator->());
+				else if (group._key == it->_key) // Key conflicts with other key
+					return NULL;
+			}
+			_hashmap.push_back(group);
+			return (_hashmap.end() - 1).operator->();
+		}
+
 	public:
 		explicit Value(string_type const& key, float_type floating, e_type type) : _type(type), _key(key)
 		{
@@ -86,7 +107,7 @@ class Value
 				throw (bad_type("tried to construct fundamental value with non-fundamental type"));
 		}
 		         Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
-		explicit Value(string_type const& key) : _type(T_GROUP), _key(key) {}
+		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) {}
 		// TODO: operator=, copy constructor ?
 
 		inline e_type		type() const { return _type; }
@@ -172,13 +193,15 @@ class Value
 			if (!this->isGroup()) {
 				throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
 			}
-			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it) {
-				if (val._type == T_GROUP && it->_type == T_GROUP && it->groupSize() == 0) {
-					*it = val; // If empty group, assign it the given value
-					return it.operator->();
+			for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
+			{
+				if (it->_key == val.key())
+				{
+					if (val._type == T_GROUP && it->_type == T_GROUP && it->_undefinedGroup == true)
+						return it.operator->();
+					else
+						return NULL;
 				}
-				else if (it->key() == val.key())
-					return NULL;
 			}
 			_hashmap.push_back(val);
 			return (_hashmap.end() - 1).operator->();

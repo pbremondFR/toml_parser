@@ -155,12 +155,17 @@ int	main(int argc, const char *argv[])
 		doc.parse();
 		std::cout << P_TYPE( doc["rootString"].type() ) << std::endl;
 		std::cout << '['<<doc["rootString"]<<']' << std::endl;
+		
 		std::cout << P_TYPE( doc["main"].type() ) << std::endl;
 		std::cout << '['<<doc["main"]<<']' << std::endl;
+
 		Document	maindoc = doc["main"];
 		std::cout << P_TYPE( maindoc["int"].type() ) << std::endl;
 		std::cout << '['<<maindoc["int"]<<']' << std::endl;
-		// std::cout << '['<<doc["bool"]<<']' << std::endl;
+
+		Document	subdoc = maindoc["sub"];
+		std::cout << P_TYPE( subdoc["bool"].type() ) << std::endl;
+		std::cout << '['<<subdoc["bool"]<<']' << std::endl;
 	}
 	return 0;
 }

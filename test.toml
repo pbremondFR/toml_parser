@@ -3,3 +3,9 @@ rootString = "Hello, world!"
 int = 42 # test comment
 [main.sub]
 bool = true# test comment
+[test]
+salut = "c'est Fanta"
+[test.a.b.c]
+[test.a]
+[test.a.b]
+bool = true

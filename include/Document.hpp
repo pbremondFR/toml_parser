@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/24 19:42:34 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/25 02:06:14 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,8 +177,6 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	if (it == line.end())
 		throw(parse_error("Invalid group definition (missing `]')", lineNum));
 	std::string	key(src_it, it);
-	if (key.length() == 0)
-		throw (parse_error("Empty group declaration", lineNum));
 	std::string::const_iterator keyIt;
 	for (keyIt = key.begin(); keyIt != key.end(); ++keyIt) {
 		if ((!_isBareKeyChar(*keyIt) && *keyIt != '.'))
@@ -187,18 +185,28 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	_currentGroup = &_root;
 	keyIt = key.begin();
 	std::string::const_iterator	dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
-	do
+	std::string::const_iterator ItLastKey
+		= (key.find_last_of('.') == std::string::npos ? keyIt : key.begin() + key.find_last_of('.') + 1);
+
+	while (keyIt != ItLastKey) // Go through all subkeys
 	{
 		std::string	subkey(keyIt, dot);
-		std::cout << "#" << subkey << std::endl;
-		_currentGroup = _currentGroup->group_addValue(Value(subkey));
-		if (_currentGroup == NULL) // FIXME: Bad logic
-			throw (parse_error("Illegal group declaration", lineNum));
-		keyIt = (dot == key.end() ? dot : dot + 1);
+		if (subkey.length() == 0)
+			throw (parse_error("Empty key", lineNum));
+		_currentGroup = _currentGroup->_getOrAddSubtable(Value(subkey));
+		if (_currentGroup == NULL)
+			throw (parse_error("Redeclared key", lineNum));
+		keyIt = dot + 1;
 		dot = std::find(keyIt, std::string::const_iterator(key.end()), '.');
-		// std::cout << "DEBUG ME" << std::endl;
-	} while (keyIt != key.end());
-	// std::cout << "DEBUG ME 2" << std::endl;
+	}
+	// Parse last key
+	std::string lastKey (ItLastKey, std::string::const_iterator(key.end())); // fuck you C++98
+	if (lastKey.length() == 0)
+		throw (parse_error("Empty key", lineNum));
+	_currentGroup = _currentGroup->group_addValue(Value(lastKey));
+	if (_currentGroup == NULL)
+		throw (parse_error("Redeclared {last} key", lineNum));
+	_currentGroup->_undefinedGroup = false;
 }
 
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
