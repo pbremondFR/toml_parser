@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 18:33:45 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:21:27 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ DocumentIterator<T>&	DocumentIterator<T>::operator++()
 {
 	assert(_root->isGroup());
 
-	// std::cerr << "### ++ ###" << std::endl;
+	// std::cerr << HBLU"### ++ ###" << std::endl;
 	++(_stack.top().second); // Increase iterator
 
 	yolo:
@@ -49,7 +49,7 @@ DocumentIterator<T>&	DocumentIterator<T>::operator++()
 		}
 		goto yolo; // NOTE: "I have humiliated myself and will now commit suicide"
 	}
-	// std::cerr << "##########\n" << std::endl;
+	// std::cerr << "##########\n"RESET << std::endl;
 
 	return *this; // tmp
 }
@@ -59,6 +59,61 @@ DocumentIterator<T>	DocumentIterator<T>::operator++(int)
 {
 	DocumentIterator	tmp(*this);
 	operator++();
+	return (tmp);
+}
+
+template < class T >
+DocumentIterator<T>&	DocumentIterator<T>::operator--()
+{
+	assert(_root->isGroup());
+
+	std::cerr << HBLU"### -- ###" << std::endl;
+	--(_stack.top().second); // Increase iterator
+
+	yolo:
+	while (_stack.top().second >= _stack.top().first->_hashmap.begin()
+		&& _stack.top().second->isGroup())
+	{
+		std::cerr << "## Stack top BEFORE: " << *_stack.top().first << "\n## "
+			<< *_stack.top().second << std::endl;
+		std::cerr << "$$ " << ((_stack.top().second->_hashmap.begin())).operator->() << std::endl;
+		
+		std::cerr << BLUHB"# ↓ Pushing stack"HBLU << std::endl;
+		
+		if (_stack.top().second->groupSize())
+			_stack.push( std::make_pair(_stack.top().second.operator->(),
+					_stack.top().second->_hashmap.end() - 1) ); // Lord forgive me for I have sinned
+		else
+			--(_stack.top().second);					
+
+		std::cerr << "## Stack top after push:\n## " << *_stack.top().first << "\n## ";
+				// << *_stack.top().second << std::endl;
+	}
+	while (_stack.top().second < (_stack.top().first->_hashmap.begin()) // iterator >= _hashmap.end()
+		&& _stack.size() > 1)
+	{
+		std::cerr << "# Stack top BEFORE: " << *_stack.top().first << std::endl;
+		std::cerr << BLUHB"# ↑ Popping stack"HBLU << std::endl;
+
+		_stack.pop();
+		if (_stack.size()) {
+			--(_stack.top().second);
+
+			std::cerr << "## Stack top after pop:\n## " << *_stack.top().first << "\n## ";
+				// << *_stack.top().second << std::endl;
+		}
+		goto yolo; // NOTE: "I have humiliated myself and will now commit suicide"
+	}
+	std::cerr << "##########\n"RESET << std::endl;
+
+	return *this; // tmp
+}
+
+template < class T >
+DocumentIterator<T>	DocumentIterator<T>::operator--(int)
+{
+	DocumentIterator	tmp(*this);
+	operator--();
 	return (tmp);
 }
 

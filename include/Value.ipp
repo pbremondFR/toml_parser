@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 05:54:47 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 22:36:53 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 			it != val._hashmap.end();
 			++it)
 		{
-			out << *it << ", ";
+			out << *it << (it == val._hashmap.end() - 1 ? " " : ", ");
 		}
 		out << "}";
 	}

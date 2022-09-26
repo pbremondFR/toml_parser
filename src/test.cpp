@@ -209,16 +209,6 @@ int	main(int argc, const char *argv[])
 		Document	doc(argv[1]);
 		doc.parse();
 		Document::iterator	osef = doc.begin();
-		for (; osef != doc.end(); ++osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t'
-				<< *osef << std::endl;
-		}
-	}
-	newtest();
-	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::iterator	osef = doc.begin();
 		osef->Str().erase();
 		for (; osef != doc.end(); ++osef) {
 			std::cout << P_TYPE( osef->type() ) << '\t'
@@ -230,7 +220,35 @@ int	main(int argc, const char *argv[])
 		Document	doc(argv[1]);
 		doc.parse();
 		Document::const_iterator	osef = doc.begin();
+		// osef->Str().erase(); // Should not compile
 		for (; osef != doc.end(); ++osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t'
+				<< *osef << std::endl;
+		}
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::iterator	osef = doc.begin();
+		for (int i = 0; i < 5; ++i, ++osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
+		}
+		std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
+
+		std::cout << "\n* Beep, beep, beep *\n" << std::endl;
+		for (int i = 0; i < 5; ++i, --osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
+		}
+		std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::reverse_iterator	osef = doc.rbegin();
+		// osef->Str().erase(); // Should not compile
+		for (; osef != doc.rend(); ++osef) {
 			std::cout << P_TYPE( osef->type() ) << '\t'
 				<< *osef << std::endl;
 		}

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 20:29:50 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:14:10 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 #include "iterator.hpp"
 
 #include "Value.hpp"
+
+#include "ansi_color.h"
 
 # if __cplusplus == 199711L
 #  define noexcept	throw()
@@ -62,12 +64,13 @@ class DocumentIterator
 	
 	private: // TODO: Use iterators
 		typedef typename	std::vector<T>::iterator	value_iterator;
+		typedef typename	std::vector<T>::iterator	reverse_value_iterator;
 		value_type*		_root;
 
 		std::stack< std::pair<value_type*, value_iterator> >	_stack;
 	
 	public:
-		DocumentIterator(reference root, value_iterator value)
+		DocumentIterator(reference root, value_iterator value) // FIXME: Bugs out if not initialized in begin
 			: _root(&root)
 			{
 				_stack.push(std::make_pair(&root, value));
@@ -94,16 +97,17 @@ class DocumentIterator
 class Document
 {
 	public:
-		typedef	Value							value_type;
-		typedef std::size_t						size_type;
-		typedef std::ptrdiff_t					difference_type;
-		typedef	Value&							reference;
-		typedef	Value const&					const_reference;
-		typedef Value*							pointer;
-		typedef Value const*					const_pointer;
-		
-		typedef DocumentIterator<Value>			iterator;
-		typedef DocumentIterator<const Value>	const_iterator;
+		typedef	Value									value_type;
+		typedef std::size_t								size_type;
+		typedef std::ptrdiff_t							difference_type;
+		typedef	Value&									reference;
+		typedef	Value const&							const_reference;
+		typedef Value*									pointer;
+		typedef Value const*							const_pointer;
+		typedef DocumentIterator<Value>					iterator;
+		typedef DocumentIterator<const Value>			const_iterator;
+		typedef	std::reverse_iterator<iterator>			reverse_iterator;
+		typedef	std::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 	private:
 		Value			_root;
@@ -153,11 +157,19 @@ class Document
 
 		iterator		begin()			{ return iterator(_root, _root._hashmap.begin());		}
 		const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
+		const_iterator	cbegin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
+
 		iterator		end()			{ return iterator(_root, _root._hashmap.end());			}
-		const_iterator	end() const		{ return const_iterator(_root, _root._hashmap.begin());	}
-		
-		const_iterator	cbegin()	const { return const_iterator(_root, _root._hashmap.begin());	}
-		const_iterator	cend()		const { return const_iterator(_root, _root._hashmap.begin());	}
+		const_iterator	end() const		{ return const_iterator(_root, _root._hashmap.end());	}
+		const_iterator	cend() const	{ return const_iterator(_root, _root._hashmap.end());	}
+
+		reverse_iterator		rbegin()		{ return reverse_iterator(end());		}
+		const_reverse_iterator	rbegin() const	{ return const_reverse_iterator(end());	}
+		const_reverse_iterator	crbegin() const	{ return const_reverse_iterator(end());	}
+
+		reverse_iterator		rend()			{ return reverse_iterator(begin());			}
+		const_reverse_iterator	rend() const	{ return const_reverse_iterator(begin());	}
+		const_reverse_iterator	crend() const	{ return const_reverse_iterator(begin());	}
 };
 
 // ============================================================================================== //

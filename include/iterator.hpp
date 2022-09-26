@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/26 04:05:30 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 04:09:13 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:07:31 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,14 +64,14 @@ void advance(It& it, Distance n)
 template<class BidirIt>
 BidirIt	prev(BidirIt it, typename std::iterator_traits<BidirIt>::difference_type n = 1)
 {
-    advance(it, -n);
+    ft::advance(it, -n);
     return it;
 }
 
 template<class BidirIt>
 BidirIt	next(BidirIt it, typename std::iterator_traits<BidirIt>::difference_type n = 1)
 {
-    advance(it, n);
+    ft::advance(it, n);
     return it;
 }
 
