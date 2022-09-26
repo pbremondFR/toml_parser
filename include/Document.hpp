@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 00:14:10 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:28:42 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ class DocumentIterator
 		std::stack< std::pair<value_type*, value_iterator> >	_stack;
 	
 	public:
-		DocumentIterator(reference root, value_iterator value) // FIXME: Bugs out if not initialized in begin
+		DocumentIterator(reference root, value_iterator value)
 			: _root(&root)
 			{
 				_stack.push(std::make_pair(&root, value));
@@ -86,8 +86,8 @@ class DocumentIterator
 
 		DocumentIterator&	operator++(); // pre
 		DocumentIterator	operator++(int); // post
-		DocumentIterator&	operator--(); // TODO
-		DocumentIterator	operator--(int); // TODO
+		DocumentIterator&	operator--(); // TESTME (or don't, if it fails I'm gonna cry)
+		DocumentIterator	operator--(int); // TESTME (or don't, if it fails I'm gonna cry)
 
 		inline bool	operator==(DocumentIterator const& rhs)	{ return (_stack.top().second == rhs._stack.top().second);	}
 		inline bool	operator!=(DocumentIterator const& rhs)	{ return (_stack.top().second != rhs._stack.top().second);	}
@@ -141,9 +141,9 @@ class Document
 		void	_parseGroup(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
 	
 	public:
-		Document() : _root(Value("", NULL)), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
-		Document(std::string const& path) : _root(Value("", NULL)),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
-		Document(const char *path)		  : _root(Value("", NULL)),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
+		Document(std::string const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
 		Document(Value const& value)	  : _root(value),			_currentGroup(&_root), _path(),		_isParsed(true) {} 
 		~Document() {}
 

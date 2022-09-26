@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 00:21:27 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:29:25 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,7 +238,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 		std::string	subkey(keyIt, dot);
 		if (subkey.length() == 0)
 			throw (parse_error("Empty key", lineNum));
-		_currentGroup = _currentGroup->_getOrAddSubtable(Value(subkey, _currentGroup));
+		_currentGroup = _currentGroup->_getOrAddSubtable(Value(subkey));
 		if (_currentGroup == NULL)
 			throw (parse_error("Redeclared key", lineNum));
 		keyIt = dot + 1;
@@ -248,7 +248,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	std::string lastKey (ItLastKey, str_const_it(key.end())); // mfw no cend()
 	if (lastKey.length() == 0)
 		throw (parse_error("Empty key", lineNum));
-	_currentGroup = _currentGroup->group_addValue(Value(lastKey, _currentGroup));
+	_currentGroup = _currentGroup->group_addValue(Value(lastKey));
 	if (_currentGroup == NULL)
 		throw (parse_error("Redeclared key", lineNum));
 	_currentGroup->_undefinedGroup = false;

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 18:44:47 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 00:30:23 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,6 @@ class Value
 
 		string_type		_key;
 
-		Value	*_parent;
 		bool	_undefinedGroup; // If the group has only been put there automatically,
 								 // i.e if it was a subgroup in a [a.b.c] declaration
 
@@ -100,9 +99,8 @@ class Value
 
 	public:
 		explicit Value(string_type const& key, float_type floating, e_type type);
-		         Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
-		explicit Value(string_type const& key, Value *parent)
-			: _type(T_GROUP), _key(key), _parent(parent), _undefinedGroup(true) { (void)_parent; }
+		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
+		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) { }
 
 		inline e_type		type() const noexcept { return _type; }
 

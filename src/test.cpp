@@ -136,7 +136,7 @@ int	main(int argc, const char *argv[])
 	newtest();
 	{
 		std::vector<Value>	vec;
-		vec.push_back(Value("group", NULL));
+		vec.push_back(Value("group"));
 		vec.push_back(Value("test", 42, Value::T_INT));
 		vec.push_back(Value("test", 42, Value::T_FLOAT));
 		vec.push_back(Value("test", false, Value::T_BOOL));
