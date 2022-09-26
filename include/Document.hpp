@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 06:32:58 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:33:39 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,10 @@
 #include "iterator.hpp"
 
 #include "Value.hpp"
+
+# if __cplusplus == 199711L
+#  define noexcept	throw()
+# endif
 
 namespace TOML
 {
@@ -116,12 +120,15 @@ class Document
 			ARRAY,
 			UNDEF
 		};
-		static inline bool	_isSpace(char c) { return (c == 0x09 || c == 0x20); }
-		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end)
+		static inline bool	_isSpace(char c) noexcept { return (c == 0x09 || c == 0x20); }
+		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end) noexcept
 		{
 			for (; it != end && _isSpace(*it); ++it) ;
 		}
-		static inline bool	_isBareKeyChar(char c) { return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_'); }
+		static inline bool _isBareKeyChar(char c) noexcept
+		{
+			return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_');
+		}
 		static e_value_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
 		
 		void	_parseKeyValue(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
@@ -134,10 +141,10 @@ class Document
 		Document(Value const& value)	  : _root(value),			_currentGroup(&_root), _path(),		_isParsed(true) {} 
 		~Document() {}
 
-		Value&				at(std::string const& key);
-		inline Value const&	at(std::string const& key) const;
-		Value&			operator[](std::string const& key);
-		Value const&	operator[](std::string const& key) const;
+		Value&			at(std::string const& key);
+		Value const&	at(std::string const& key) const;
+		Value&			operator[](std::string const& key)		 noexcept;
+		Value const&	operator[](std::string const& key) const noexcept;
 
 		bool	parse(std::string const& path);
 		bool	parse();
@@ -153,3 +160,7 @@ class Document
 #include "Document.ipp"
 
 } // namespace TOML
+
+# if __cplusplus == 199711L
+#  undef noexcept
+# endif

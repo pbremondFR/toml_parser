@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 06:33:32 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:44:47 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,6 @@ class Value
 		         Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
 		explicit Value(string_type const& key, Value *parent)
 			: _type(T_GROUP), _key(key), _parent(parent), _undefinedGroup(true) { (void)_parent; }
-		
-		// TODO: operator=, copy constructor? They're compiler provided for now, test them.
 
 		inline e_type		type() const noexcept { return _type; }
 

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 06:32:01 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:33:45 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,14 +102,14 @@ Value const&	Document::at(std::string const& key) const
 	throw (std::out_of_range("TOML::Document::at(): std::out_of_range"));
 }
 
-Value&			Document::operator[](std::string const& key)
+Value&			Document::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;
 	for (it = _root._hashmap.begin(); it->_key != key && it != _root._hashmap.end(); ++it) ;
 	return *it;
 }
 
-Value const&	Document::operator[](std::string const& key) const
+Value const&	Document::operator[](std::string const& key) const noexcept
 {
 	std::vector<Value>::const_iterator it;
 	for (it = _root._hashmap.begin(); it->_key != key && it != _root._hashmap.end(); ++it) ;
