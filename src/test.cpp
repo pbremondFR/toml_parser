@@ -236,7 +236,7 @@ int	main(int argc, const char *argv[])
 		}
 		std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
 
-		std::cout << "\n* Beep, beep, beep *\n" << std::endl;
+		std::cout << F_YEL("\n* Beep, beep, beep *\n") << std::endl;
 		for (int i = 0; i < 5; ++i, --osef) {
 			std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
 		}
