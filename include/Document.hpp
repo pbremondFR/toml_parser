@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 18:33:39 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 20:29:50 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,20 +61,22 @@ class DocumentIterator
 		typedef typename	std::bidirectional_iterator_tag		iterator_category;
 	
 	private: // TODO: Use iterators
-		typedef typename	std::vector<Value>::iterator	value_iterator;
-		value_type*						_root;
+		typedef typename	std::vector<T>::iterator	value_iterator;
+		value_type*		_root;
 
-		// std::stack<value_iterator>	_stack;
 		std::stack< std::pair<value_type*, value_iterator> >	_stack;
 	
 	public:
-		DocumentIterator(reference root, std::vector<Value>::iterator value)
+		DocumentIterator(reference root, value_iterator value)
 			: _root(&root)
 			{
 				_stack.push(std::make_pair(&root, value));
 			}
 
-		// inline operator DocumentIterator<const T>() const { return _currentGroup; }
+		inline operator DocumentIterator<const T>() const
+		{
+			return DocumentIterator<const T>(*_root, _stack.top().second);
+		}
 
 		inline reference	operator* () const { return _stack.top().second.operator*();	}
 		inline pointer		operator->() const { return _stack.top().second.operator->();	}
@@ -149,8 +151,13 @@ class Document
 		bool	parse(std::string const& path);
 		bool	parse();
 
-		iterator	begin()	{ return iterator(_root, _root._hashmap.begin());	}
-		iterator	end()	{ return iterator(_root, _root._hashmap.end());		}
+		iterator		begin()			{ return iterator(_root, _root._hashmap.begin());		}
+		const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
+		iterator		end()			{ return iterator(_root, _root._hashmap.end());			}
+		const_iterator	end() const		{ return const_iterator(_root, _root._hashmap.begin());	}
+		
+		const_iterator	cbegin()	const { return const_iterator(_root, _root._hashmap.begin());	}
+		const_iterator	cend()		const { return const_iterator(_root, _root._hashmap.begin());	}
 };
 
 // ============================================================================================== //

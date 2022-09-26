@@ -214,5 +214,26 @@ int	main(int argc, const char *argv[])
 				<< *osef << std::endl;
 		}
 	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::iterator	osef = doc.begin();
+		osef->Str().erase();
+		for (; osef != doc.end(); ++osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t'
+				<< *osef << std::endl;
+		}
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::const_iterator	osef = doc.begin();
+		for (; osef != doc.end(); ++osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t'
+				<< *osef << std::endl;
+		}
+	}
 	return 0;
 }
