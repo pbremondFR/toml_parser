@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 19:50:30 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 06:32:58 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@
 #include <cstdlib>
 #include <sstream>
 #include <iterator>
+#include <stack>
+
+#include "iterator.hpp"
 
 #include "Value.hpp"
 
@@ -47,44 +50,54 @@ template < class T >
 class DocumentIterator
 {
 	public:
-		typedef typename	std::iterator_traits<T>::difference_type	difference_type;
-		typedef typename	std::iterator_traits<T>::value_type			value_type;
-		typedef typename	std::iterator_traits<T>::pointer			pointer;
-		typedef typename	std::iterator_traits<T>::reference			reference;
-		typedef typename	std::bidirectional_iterator_tag				iterator_category;
+		typedef typename	std::ptrdiff_t						difference_type;
+		typedef 			T									value_type;
+		typedef				T*									pointer;
+		typedef				T&									reference;
+		typedef typename	std::bidirectional_iterator_tag		iterator_category;
 	
 	private: // TODO: Use iterators
-		value_type*		_root;
-		value_type*		_current;
+		typedef typename	std::vector<Value>::iterator	value_iterator;
+		value_type*						_root;
+
+		// std::stack<value_iterator>	_stack;
+		std::stack< std::pair<value_type*, value_iterator> >	_stack;
 	
 	public:
-		DocumentIterator(reference value) : _root(&value), _current(_root->_hashmap[0]) {}
+		DocumentIterator(reference root, std::vector<Value>::iterator value)
+			: _root(&root)
+			{
+				_stack.push(std::make_pair(&root, value));
+			}
 
-		inline operator DocumentIterator<const T>() const { return _current; }
+		// inline operator DocumentIterator<const T>() const { return _currentGroup; }
 
-		inline reference	operator* () const { return *_current;	}
-		inline pointer		operator->() const { return _current;	}
+		inline reference	operator* () const { return _stack.top().second.operator*();	}
+		inline pointer		operator->() const { return _stack.top().second.operator->();	}
 
 		DocumentIterator&	operator++(); // pre
 		DocumentIterator	operator++(int); // post
-		DocumentIterator&	operator--();
-		DocumentIterator	operator--(int);
+		DocumentIterator&	operator--(); // TODO
+		DocumentIterator	operator--(int); // TODO
 
-		inline bool	operator==(DocumentIterator const& rhs)	{ return (_current == rhs._current);	}
-		inline bool	operator!=(DocumentIterator const& rhs)	{ return (_current != rhs._current);	}
+		inline bool	operator==(DocumentIterator const& rhs)	{ return (_stack.top().second == rhs._stack.top().second);	}
+		inline bool	operator!=(DocumentIterator const& rhs)	{ return (_stack.top().second != rhs._stack.top().second);	}
 };
 
 // TODO: iterators
 class Document
 {
 	public:
-		typedef	Value				value_type;
-		typedef std::size_t			size_type;
-		typedef std::ptrdiff_t		difference_type;
-		typedef	Value&				reference;
-		typedef	Value const&		const_reference;
-		typedef Value*				pointer;
-		typedef Value const*		const_pointer;
+		typedef	Value							value_type;
+		typedef std::size_t						size_type;
+		typedef std::ptrdiff_t					difference_type;
+		typedef	Value&							reference;
+		typedef	Value const&					const_reference;
+		typedef Value*							pointer;
+		typedef Value const*					const_pointer;
+		
+		typedef DocumentIterator<Value>			iterator;
+		typedef DocumentIterator<const Value>	const_iterator;
 
 	private:
 		Value			_root;
@@ -128,6 +141,9 @@ class Document
 
 		bool	parse(std::string const& path);
 		bool	parse();
+
+		iterator	begin()	{ return iterator(_root, _root._hashmap.begin());	}
+		iterator	end()	{ return iterator(_root, _root._hashmap.end());		}
 };
 
 // ============================================================================================== //

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 17:54:56 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 05:54:47 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,16 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 	else if (val.isStr())
 		out << val._str;
 	else if (val.isGroup())
-		out << "GROUP: TODO";
+	{
+		out << "Group " << val._key << "("<<val._hashmap.size()<<")" << "->{";
+		for (std::vector<Value>::const_iterator it = val._hashmap.begin();
+			it != val._hashmap.end();
+			++it)
+		{
+			out << *it << ", ";
+		}
+		out << "}";
+	}
 	else
 		out << "TODO";
 	return out;

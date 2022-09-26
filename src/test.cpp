@@ -177,5 +177,42 @@ int	main(int argc, const char *argv[])
 		std::cout << P_TYPE( doc["main"]["sub"]["bool"].type() ) << std::endl;
 		std::cout << '['<< doc["main"]["sub"]["bool"] <<']' << std::endl;
 	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::iterator	osef = doc.begin();
+		std::cout << P_TYPE( osef->type() ) << std::endl;
+		++osef;
+		std::cout << P_TYPE( osef->type() ) << std::endl;
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		std::cout << '['<<doc["main"]<<']' << std::endl;
+		std::cout << '['<<doc["test"]<<']' << std::endl;
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::iterator	osef = doc.begin();
+		for (int i = 0; i < 6; ++i) {
+			std::cout << P_TYPE( osef->type() ) << '\t'
+				<< *osef << std::endl;
+			++osef;
+		}
+	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document::iterator	osef = doc.begin();
+		for (; osef != doc.end(); ++osef) {
+			std::cout << P_TYPE( osef->type() ) << '\t'
+				<< *osef << std::endl;
+		}
+	}
 	return 0;
 }

@@ -1,6 +1,7 @@
 rootString = "Hello, world!"
 [main]
 int = 42 # test comment
+int2 = 21 # test comment
 [main.sub]
 bool = true# test comment
 [test]

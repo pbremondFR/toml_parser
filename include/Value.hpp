@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/25 19:37:56 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/26 06:33:32 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,9 @@ class Value
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
+		template <class T>
+		friend class DocumentIterator; // TODO: Remove me when everything is done, if possible
+		
 		Value&	operator=(Value const&) { assert(false); } // Disables the operator= assignment
 
 		// Possible types that the value can be
