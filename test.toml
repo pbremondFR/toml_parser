@@ -5,8 +5,12 @@ int2 = 21 # test comment
 [main.sub]
 bool = true# test comment
 [test]
-salut = "c'est Fanta"
+salut = "c'est\\\\\n\t\t\"Fanta\""    	
+coucou = "How\u20ACare\tyou\u00bf"
 [test.a.b.c]
 [test.a]
+simple = [0, 1, 2]
+less-simple = [ [0, 1, 2], [3, 4, 5] ]
+wtf = [ [[0, 1], [2, 3]], [[4, 5], [6, 7]] ]
 [test.a.b]
 bool = false

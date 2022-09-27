@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 00:28:42 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 06:17:51 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,6 @@ class DocumentIterator
 		inline bool	operator!=(DocumentIterator const& rhs)	{ return (_stack.top().second != rhs._stack.top().second);	}
 };
 
-// TODO: iterators
 class Document
 {
 	public:
@@ -116,7 +115,7 @@ class Document
 		bool			_isParsed;
 
 	private:
-		enum e_value_type
+		enum e_value_type // FIXME: Use same enum across Value and Document
 		{
 			STRING,
 			INT,
@@ -137,8 +136,16 @@ class Document
 		}
 		static e_value_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
 		
-		void	_parseKeyValue(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
 		void	_parseGroup(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
+		void	_parseKeyValue(std::string::const_iterator it, std::string const& line, std::size_t& lineNum,
+			std::ifstream& fs);
+
+		void	_parseString(std::string const& key, std::string::const_iterator it, std::string const& line, std::size_t lineNum);
+		void	_parseArray(std::string::const_iterator it, std::string const& line, std::size_t& lineNum,
+			std::ifstream& fs);
+
+		void	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
+		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root

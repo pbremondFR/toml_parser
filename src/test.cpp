@@ -247,7 +247,6 @@ int	main(int argc, const char *argv[])
 		Document	doc(argv[1]);
 		doc.parse();
 		Document::reverse_iterator	osef = doc.rbegin();
-		// osef->Str().erase(); // Should not compile
 		for (; osef != doc.rend(); ++osef) {
 			std::cout << P_TYPE( osef->type() ) << '\t'
 				<< *osef << std::endl;

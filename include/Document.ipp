@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 00:29:25 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 06:33:21 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,14 +204,13 @@ bool	Document::parse()
 		// Insert quoted keys, groups tables, etc, here
 		else
 		{
-			_parseKeyValue(it, line, lineNum);
+			_parseKeyValue(it, line, lineNum, fs);
 		}
 	}
 	_isParsed = true;
 	return true;
 }
 
-// TODO: Finish me, TESTME
 void	Document::_parseGroup(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
 	typedef	std::string::const_iterator		str_const_it;
@@ -254,8 +253,10 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	_currentGroup->_undefinedGroup = false;
 }
 
-void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
+void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t& lineNum,
+	std::ifstream& fs)
 {
+	(void)fs;
 	typedef	std::string::const_iterator		str_const_it;
 	
 	// Get the key
@@ -275,17 +276,8 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 	switch (_guessValueType(it, line.end()))
 	{
 		case STRING:
-		{ // TODO: unicode, yes or no ? Escaping as well
-			str_const_it last = std::find(++it, str_const_it(line.end()), '\"');
-			if (last != line.end())
-				_currentGroup->group_addValue( Value(key, std::string(it, last)) );
-			else
-				throw (parse_error("Missing `\"' at the end of a string at line ", lineNum));
-			_skipWhitespaces(last, line.end());
-			if (last != line.end() && *last != '#' && *last != '\"')
-				throw (parse_error("Illegal character after end of string", lineNum));
+			_parseString(key, it, line, lineNum);
 			break;
-		}
 		case INT:
 		{
 			Value::int_type	val;
@@ -335,4 +327,80 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 		case UNDEF:
 			throw (parse_error("Illegal or missing value", lineNum));
 	}
+}
+
+void	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str,
+	char escaped) const
+{
+	switch (escaped)
+	{
+		case '\"':
+			raw_str.replace(it, it + 2, "\"");
+			break;
+		case 'b':
+			raw_str.replace(it, it + 2, "\b");
+			break;
+		case 't':
+			raw_str.replace(it, it + 2, "\t");
+			break;
+		case 'n':
+			raw_str.replace(it, it + 2, "\n");
+			break;
+		case 'f':
+			raw_str.replace(it, it + 2, "\f");
+			break;
+		case 'r':
+			raw_str.replace(it, it + 2, "\r");
+			break;
+		case '/':
+			raw_str.replace(it, it + 2, "/");
+			break;
+		case '\\':
+			raw_str.replace(it, it + 2, "\\");
+			++it;
+			break;
+	}
+}
+
+// TODO: One the one hand, this is missing unicode escaping capabilities.
+// On the other hand, this is very funny. And you can just use your emoji keyboard.
+void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const
+{
+	if (!isxdigit(*(it + 2)) || !isxdigit(*(it + 3)) || !isxdigit(*(it + 4)) || !isxdigit(*(it + 5)))
+		throw (parse_error("Illegal unicode escape sequence", lineNum));
+	raw_str.replace(it, it + 6, "🗿");
+	// Unicode escaping is not currently supported. As such, any unicode escape code will translate to
+	// the 🗿 emoji.
+}
+
+void	Document::_parseString(std::string const& key, std::string::const_iterator it,
+	std::string const& line, std::size_t lineNum)
+{
+	typedef	std::string::const_iterator		str_const_it;
+
+	std::string	raw_str(it, line.end());
+	// Loop through all backslashes, replacing them each time
+	for (std::string::iterator it = std::find(raw_str.begin(), raw_str.end(), '\\');
+		it != raw_str.end();
+		it = std::find(it, raw_str.end(), '\\'))
+	{
+		if (const char *c = std::strchr("\"btnfr/\\", *(it + 1))) // If \", \b, \t, \n, \f, \r, \/, or \\.
+			_parseCompactEscapeSequence(it, raw_str, *c);
+		else if (*(it + 1) == 'u') // Unicode escaping
+			_parseEscapedUnicode(it, raw_str, lineNum);
+		else
+			throw (parse_error(std::string("Illegal escaped character (") + *it + *(it+1) + ')', lineNum));
+	}
+	
+	str_const_it last_quote = raw_str.begin() + raw_str.find_last_of('\"');
+	if (last_quote == raw_str.end())
+		throw (parse_error("Missing `\"' at the end of a string", lineNum));
+	str_const_it new_str_end = last_quote;
+	_skipWhitespaces(++last_quote, raw_str.end());
+	if (last_quote != raw_str.end() && *last_quote != '#')
+		throw (parse_error("Illegal character after end of string", lineNum));
+	raw_str.erase(new_str_end, raw_str.end());
+	raw_str.erase(0, 1);
+
+	_currentGroup->group_addValue( Value(key, raw_str) );
 }
