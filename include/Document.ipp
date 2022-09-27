@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 06:33:21 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 07:08:42 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,9 +287,8 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 				std::sscanf(it.base(), "%lld", &val); // Just rewrite your own func, dude
 			#endif
 			for (; it != line.end() && (isdigit(*it) || *it == '-'); ++it) ;
-			_skipWhitespaces(it, line.end());
-			if (it != line.end() && *it != '#')
-				throw (parse_error("Illegal integer value", lineNum));
+			if (_hasNonWhitespace(it, line.end()))
+				throw (parse_error("Illegal floating point value", lineNum));
 			_currentGroup->group_addValue(Value(key, val, Value::T_INT));
 			break;
 		}
@@ -298,8 +297,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			Value::float_type	val;
 			std::sscanf(it.base(), "%lf", &val); // Just rewrite your own func, dude
 			for (; it != line.end() && (isdigit(*it) || *it == '-' || *it == '.'); ++it) ;
-			_skipWhitespaces(it, line.end());
-			if (it != line.end() && *it != '#')
+			if (_hasNonWhitespace(it, line.end()))
 				throw (parse_error("Illegal floating point value", lineNum));
 			_currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
 			break;
@@ -309,10 +307,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			Value::bool_type	val;
 			str_const_it last = std::find(it, str_const_it(line.end()), 'e');
 			std::string	tmp(it, ++last);
-			if (tmp != "true" && tmp != "false") // yeah that bugs
-				throw (parse_error("Illegal boolean value", lineNum));
-			_skipWhitespaces(last, line.end());
-			if (last != line.end() && *last != '#')
+			if ((tmp != "true" && tmp != "false") || _hasNonWhitespace(last, line.end()))
 				throw (parse_error("Illegal boolean value", lineNum));
 			val = (tmp == "true" ? true : false);
 			_currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
@@ -395,11 +390,9 @@ void	Document::_parseString(std::string const& key, std::string::const_iterator 
 	str_const_it last_quote = raw_str.begin() + raw_str.find_last_of('\"');
 	if (last_quote == raw_str.end())
 		throw (parse_error("Missing `\"' at the end of a string", lineNum));
-	str_const_it new_str_end = last_quote;
-	_skipWhitespaces(++last_quote, raw_str.end());
-	if (last_quote != raw_str.end() && *last_quote != '#')
+	if (_hasNonWhitespace(++last_quote, raw_str.end()))
 		throw (parse_error("Illegal character after end of string", lineNum));
-	raw_str.erase(new_str_end, raw_str.end());
+	raw_str.erase(last_quote, raw_str.end());
 	raw_str.erase(0, 1);
 
 	_currentGroup->group_addValue( Value(key, raw_str) );

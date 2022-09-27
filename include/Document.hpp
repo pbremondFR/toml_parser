@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 06:17:51 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 06:44:09 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,12 @@ class Document
 			return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_');
 		}
 		static e_value_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
+		// Returns whether or not iterator range has got non-whitespace characters. Comments are ignored.
+		static inline bool	_hasNonWhitespace(std::string::const_iterator first, std::string::const_iterator const& last)
+		{
+			_skipWhitespaces(first, last);
+			return (first != last && *first != '#');
+		}
 		
 		void	_parseGroup(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
 		void	_parseKeyValue(std::string::const_iterator it, std::string const& line, std::size_t& lineNum,
