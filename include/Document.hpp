@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 06:44:09 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 08:11:54 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class parse_error : public std::exception
 };
 
 template < class T >
-class DocumentIterator
+class DocumentIterator // FIXME: If the root of the Document starts with a group, EVERYTHING DIES
 {
 	public:
 		typedef typename	std::ptrdiff_t						difference_type;
@@ -62,9 +62,8 @@ class DocumentIterator
 		typedef				T&									reference;
 		typedef typename	std::bidirectional_iterator_tag		iterator_category;
 	
-	private: // TODO: Use iterators
+	private:
 		typedef typename	std::vector<T>::iterator	value_iterator;
-		typedef typename	std::vector<T>::iterator	reverse_value_iterator;
 		value_type*		_root;
 
 		std::stack< std::pair<value_type*, value_iterator> >	_stack;

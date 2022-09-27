@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 07:08:42 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/27 09:22:55 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -316,7 +316,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 		case DATE:
 			std::cout << "date case" << std::endl;
 			break;
-		case ARRAY:
+		case ARRAY: // TODO: Do that next. It's the most important.
 			std::cout << "array case" << std::endl;
 			break;
 		case UNDEF:
