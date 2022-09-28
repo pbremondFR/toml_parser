@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 10:07:09 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 13:34:43 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,11 @@ class Value
 		typedef		Value const&		const_reference;
 		typedef 	Value*				pointer;
 		typedef 	Value const*		const_pointer;
+
+		typedef		std::vector<Value>::iterator				array_iterator;
+		typedef		std::vector<Value>::const_iterator			array_const_iterator;
+		typedef		std::vector<Value>::reverse_iterator		array_reverse_iterator;
+		typedef		std::vector<Value>::const_reverse_iterator	array_const_reverse_iterator;
 
 		typedef 	std::string			string_type;
 		typedef		__int64_t			int_type;
@@ -128,20 +133,24 @@ class Value
 		inline string_type&			Str()	{ if (isStr())	 return _str;	throw (bad_type("Value::Str()"));	}
 		inline group_type&			Group()	{ if (isGroup()) return *this;	throw (bad_type("Value::Group()"));	}
 
-		inline int_type const&		Int()	const { if (isInt())	return _int;	throw (bad_type("Int()"));		}
-		inline float_type const&	Float()	const { if (isFloat())	return _float;	throw (bad_type("Float()"));	}
-		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw (bad_type("Bool()"));		}
-		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Str()"));		}
-		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw (bad_type("Group()"));	}
+		inline int_type const&		Int()	const { if (isInt())	return _int;	throw (bad_type("Value::Int()"));		}
+		inline float_type const&	Float()	const { if (isFloat())	return _float;	throw (bad_type("Value::Float()"));	}
+		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw (bad_type("Value::Bool()"));		}
+		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Value::Str()"));		}
+		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw (bad_type("Value::Group()"));	}
 
 		inline string_type&			key()		noexcept { return _key; }
 		inline string_type const&	key() const	noexcept { return _key; }
 
 		Value&			at(std::string const& key);
 		Value const&	at(std::string const& key) const;
+		Value&			at(size_type n);
+		Value const&	at(size_type n) const;
 
 		Value&			operator[](std::string const& key)		 noexcept;
 		Value const&	operator[](std::string const& key) const noexcept;
+		Value&			operator[](size_type n)		 noexcept;
+		Value const&	operator[](size_type n) const noexcept;
 
 		// TODO: When an incorrect set method is called, should it throw, or should it return false ?
 		// NOTE: Ah fuck it's not typesafe at all
@@ -151,6 +160,16 @@ class Value
 
 		Value	*group_addValue(Value const& val);
 		void	array_addValue(Value const& val);
+
+		array_iterator			begin()			{ return _array.begin(); }
+		array_const_iterator	begin() const	{ return _array.begin(); }
+		array_iterator			end()			{ return _array.end(); }
+		array_const_iterator	end() const		{ return _array.end(); }
+
+		array_reverse_iterator			rbegin()			{ return _array.rbegin(); }
+		array_const_reverse_iterator	rbegin() const		{ return _array.rbegin(); }
+		array_reverse_iterator			rend()				{ return _array.rend(); }
+		array_const_reverse_iterator	rend() const		{ return _array.rend(); }
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
 };

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 11:25:15 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 13:22:25 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,23 @@ Value const&	Value::at(std::string const& key) const
 	return *it;
 }
 
+Value&			Value::at(size_type n)
+{
+	if (!isArray())
+		throw (bad_type("Value::operator[] called with non-Group type"));
+	if (n > _array.size())
+		throw std::out_of_range("Value::operator[]: std::out_of_range");
+	return _array[n];
+}
+Value const&	Value::at(size_type n) const
+{
+	if (!isArray())
+		throw (bad_type("Value::operator[] called with non-Group type"));
+	if (n > _array.size())
+		throw std::out_of_range("Value::operator[]: std::out_of_range");
+	return _array[n];
+}
+
 Value&			Value::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;
@@ -74,6 +91,15 @@ Value const&	Value::operator[](std::string const& key) const noexcept
 	std::vector<Value>::const_iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
 	return *it;
+}
+
+Value&			Value::operator[](size_type n) noexcept
+{
+	return _array[n];
+}
+Value const&	Value::operator[](size_type n) const noexcept
+{
+	return _array[n];
 }
 
 Value::bool_type	Value::set(float_type floating) noexcept

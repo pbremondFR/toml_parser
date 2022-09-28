@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 11:52:34 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 13:25:33 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,11 @@ class Document
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
 		Document(std::string const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
 		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
-		Document(Value const& value)	  : _root(value),			_currentGroup(&_root), _path(),		_isParsed(true) {} 
+		Document(Value const& value)	  : _root(value),		_currentGroup(&_root), _path(),		_isParsed(true)
+		{
+			if (!value.isGroup())
+				throw bad_type("Tried constructing document from non-Group value");
+		} 
 		~Document() {}
 
 		Value&			at(std::string const& key);

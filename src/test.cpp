@@ -154,5 +154,54 @@ int	main(int argc, const char *argv[])
 		std::cout << P_TYPE( test_a["wtf"].type() ) << std::endl;
 		std::cout << test_a["wtf"] << std::endl;
 	}
+	newtest();
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document	test_a = doc["test"]["a"]; 
+
+		std::cout << P_TYPE( test_a["simple1"].type() ) << std::endl;
+		std::cout << test_a["simple1"] << std::endl;
+		std::cout << test_a["simple1"][0] << std::endl;
+		std::cout << test_a["simple1"][1] << std::endl;
+		std::cout << test_a["simple1"][2] << std::endl;
+
+		for (Value::array_iterator it = test_a["simple2"].begin(); it != test_a["simple2"].end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+
+		for (Value::array_iterator it = test_a["simple3"].begin(); it != test_a["simple3"].end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+
+		for (Value::array_iterator it = test_a["simple4"].begin(); it != test_a["simple4"].end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+	}
+	newtest("Array iterators");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document	test_a = doc["test"]["a"];
+
+		for (Value::array_iterator it = test_a["less-simple"].begin(); it != test_a["less-simple"].end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+		
+		for (Value::array_iterator it = test_a["wtf"].begin(); it != test_a["wtf"].end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+	}
+	newtest("Nested array operator[]");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document	test_a = doc["test"]["a"];
+
+		std::cout << test_a["less-simple"][0][0] << std::endl;
+		std::cout << test_a["less-simple"][0][1] << std::endl;
+		std::cout << test_a["less-simple"][1][0] << std::endl;
+
+		std::cout << "===============================" << std::endl;
+
+		std::cout << test_a["wtf"][0][0][0] << std::endl;
+		std::cout << test_a["wtf"][0][1][0] << std::endl;
+		std::cout << test_a["wtf"][1][0][0] << std::endl;
+	}
 	return 0;
 }
