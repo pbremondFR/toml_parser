@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 09:22:55 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 03:18:20 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,31 +25,31 @@ DocumentIterator<T>&	DocumentIterator<T>::operator++()
 {
 	assert(_root->isGroup());
 
-	// std::cerr << HBLU"### ++ ###" << std::endl;
+	std::cerr << HBLU"### ++ ###" << std::endl;
 	++(_stack.top().second); // Increase iterator
 
 	yolo:
 	while (_stack.top().second < _stack.top().first->_hashmap.end()
 		&& _stack.top().second->isGroup())
 	{
-		// std::cerr << "# ↓ Pushing stack" << std::endl;
+		std::cerr << "# ↓ Pushing stack" << std::endl;
 		_stack.push( std::make_pair(_stack.top().second.operator->(),
 				_stack.top().second->_hashmap.begin()) ); // Lord forgive me for I have sinned
-		// std::cerr << "# Stack top after push: " << *_stack.top().first << std::endl;
+		std::cerr << "# Stack top after push: " << *_stack.top().first << std::endl;
 	}
 	while (_stack.top().second >= (_stack.top().first->_hashmap.end())
 		&& _stack.size() > 1)
 	{
-		// std::cerr << "# Stack top BEFORE: " << *_stack.top().first << std::endl;
-		// std::cerr << "# ↑ Popping stack" << std::endl;
+		std::cerr << "# Stack top BEFORE: " << *_stack.top().first << std::endl;
+		std::cerr << "# ↑ Popping stack" << std::endl;
 		_stack.pop();
 		if (_stack.size()) {
 			++(_stack.top().second);
-			// std::cerr << "# Stack top after pop: " << *_stack.top().first << std::endl;
+			std::cerr << "# Stack top after pop: " << *_stack.top().first << std::endl;
 		}
 		goto yolo; // NOTE: "I have humiliated myself and will now commit suicide"
 	}
-	// std::cerr << "##########\n"RESET << std::endl;
+	std::cerr << "##########\n"RESET << std::endl;
 
 	return *this; // tmp
 }
@@ -392,7 +392,7 @@ void	Document::_parseString(std::string const& key, std::string::const_iterator 
 		throw (parse_error("Missing `\"' at the end of a string", lineNum));
 	if (_hasNonWhitespace(++last_quote, raw_str.end()))
 		throw (parse_error("Illegal character after end of string", lineNum));
-	raw_str.erase(last_quote, raw_str.end());
+	raw_str.erase(last_quote - 1, raw_str.end());
 	raw_str.erase(0, 1);
 
 	_currentGroup->group_addValue( Value(key, raw_str) );
