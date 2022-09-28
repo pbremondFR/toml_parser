@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 11:21:19 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:54:18 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,7 +187,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 			break;
 		case Value::T_ARRAY:
 			// std::cout << "Uncomment me you dipshit" << std::endl;
-			_parseArray(key, it, line, lineNum, fs);
+			_currentGroup->group_addValue( _parseArray(key, it, line, lineNum, fs) );
 			break;
 		// case Value::T_UNDEF:
 		default:
@@ -296,11 +296,13 @@ Value::string_type::const_iterator	Document::_nextArrayVal(Value::string_type::c
 	Value::string_type::const_iterator end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
-	_skipWhitespaces(++it, end);
+	if (*it == ',')
+		++it;
+	_skipWhitespaces(it, end);
 	return it;
 }
 
-Value::string_type::const_iterator	Document::_endofArrayVal(Value::string_type::const_iterator it,
+Value::string_type::const_iterator	Document::_endofArrayIt(Value::string_type::const_iterator it,
 	Value::string_type::const_iterator end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
@@ -308,48 +310,49 @@ Value::string_type::const_iterator	Document::_endofArrayVal(Value::string_type::
 }
 
 // Expects it to be pointing to a '['
-void	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
+Value	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
 	std::string& line, std::size_t& lineNum, std::ifstream& fs)
 {
 	(void)fs;
 	_skipWhitespaces(++it, line.end());
-	const Value::e_type	array_type = _guessValueType(it, _endofArrayVal(it, line.end()));
+	const Value::e_type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
 	assert(array_type != Value::T_UNDEF);
 	// std::cout << _YEL << (P_TYPE(array_type)) << RESET << std::endl;
 
 	Value	array(key, array_type);
 	while (it != line.end() && *it != ']')
 	{
-		const Value::e_type	type = _guessValueType(it, _endofArrayVal(it, line.end()));
+		const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
 		// std::cout << _CYN << (P_TYPE(type)) << RESET << std::endl;
-		// std::cout << _CYN << std::string(it, _endofArrayVal(it, line.end())) << RESET << std::endl;
+		// std::cout << _CYN << std::string(it, _endofArrayIt(it, line.end())) << RESET << std::endl;
 		// std::cout << _BLU << std::string(it, str_const_it(line.end())) << RESET << std::endl;
 		if (type != array_type)
 			throw parse_error("Array contains different types", lineNum);
-		switch (type)
+		switch (array_type)
 		{
 			case Value::T_INT:
-				array.array_addValue( Value("", _parseInt(it, _endofArrayVal(it, line.end()), lineNum), Value::T_INT) );
+				array.array_addValue( Value("", _parseInt(it, _endofArrayIt(it, line.end()), lineNum), Value::T_INT) );
 				break;
 			case Value::T_FLOAT:
-				array.array_addValue( Value("", _parseFloat(it, _endofArrayVal(it, line.end()), lineNum), Value::T_FLOAT) );
+				array.array_addValue( Value("", _parseFloat(it, _endofArrayIt(it, line.end()), lineNum), Value::T_FLOAT) );
 				break;
 			case Value::T_BOOL:
-				array.array_addValue( Value("", _parseBool(it, _endofArrayVal(it, line.end()), lineNum), Value::T_BOOL) );
+				array.array_addValue( Value("", _parseBool(it, _endofArrayIt(it, line.end()), lineNum), Value::T_BOOL) );
 				break;
 			case Value::T_STRING:
-				array.array_addValue( Value("", _parseString(it, _endofArrayVal(it, line.end()), lineNum)) );
+				array.array_addValue( Value("", _parseString(it, _endofArrayIt(it, line.end()), lineNum)) );
 				break;
 			case Value::T_DATE:
 				; // TODO
 				break;
-			// case Value::T_ARRAY:
-			// 	array.array_addValue( Value("", ))
-			// 	break;
+			case Value::T_ARRAY:
+				array.array_addValue( _parseArray("", it, line, lineNum, fs) );
+				++it;
+				break;
 			default:
 				throw parse_error("Unexpected item in array", lineNum);
 		}
 		it = _nextArrayVal(it, line.end());
 	}
-	_currentGroup->group_addValue(array);
+	return (array);
 }

@@ -147,6 +147,12 @@ int	main(int argc, const char *argv[])
 
 		std::cout << P_TYPE( test_a["simple4"].type() ) << std::endl;
 		std::cout << test_a["simple4"] << std::endl;
+
+		std::cout << P_TYPE( test_a["less-simple"].type() ) << std::endl;
+		std::cout << test_a["less-simple"] << std::endl;
+
+		std::cout << P_TYPE( test_a["wtf"].type() ) << std::endl;
+		std::cout << test_a["wtf"] << std::endl;
 	}
 	return 0;
 }

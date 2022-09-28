@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 11:20:44 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:52:34 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,8 +107,8 @@ class Document
 		Value::string_type::const_iterator
 			_nextArrayVal(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
 		Value::string_type::const_iterator
-			_endofArrayVal(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
-		void		_parseArray(std::string const& key, std::string::const_iterator& it,
+			_endofArrayIt(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
+		Value	_parseArray(std::string const& key, std::string::const_iterator& it,
 						std::string& line, std::size_t& lineNum, std::ifstream& fs);
 	
 	public:
