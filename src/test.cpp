@@ -14,119 +14,37 @@
 
 using namespace TOML; // yeah yeah I know, it's testing, gimme a break
 
-inline void	newtest(void)
+static std::string	centeredString(const std::string& src, std::size_t len)
 {
-	static int	i(1);
+	std::ptrdiff_t	pad_len = len - src.length();
+	if (pad_len < 0)
+		pad_len = 0;
+	std::string	out(pad_len / 2, ' ');
 
-	std::cout << "\e[0;30;47m===============TEST " << i++ << "===============\e[0m"
-		<< std::endl;
+	out += src;
+	out.append(pad_len / 2 + pad_len % 2, ' ');
+	return (out);
 }
 
-class Base
+inline void	newtest(const char *description = NULL)
 {
-	public:
-		virtual Value::e_type	getType() const { return Value::T_UNDEF; }
-		bool	isInt() const { return this->getType() == Value::T_INT; }
-		virtual ~Base() {};
+	static int	i = 1;
+	std::stringstream	header;
+	header << "===============TEST " << i++ << "===============";
 
-		virtual __int64_t&			getInt()		{ throw(std::logic_error("wtf")); }
-		virtual __int64_t const&	getInt() const  { throw(std::logic_error("wtf")); }
-};
-
-class String : public Base
-{
-	public:
-		typedef		std::string		value_type;
-
-	private:
-		value_type	_val;
-	
-	public:
-		Value::e_type	getType() const { return Value::T_STRING; }
-		value_type&	getStr() {return _val; }
-		// value_type const&	getStr() const { return _val; }
-
-};
-
-class Integer : public Base
-{
-	public:
-		typedef 	__int64_t		value_type;
-
-	private:
-		value_type	_val;
-	
-	public:
-		Integer(value_type x) : _val(x) {}
-		Value::e_type	getType() const { return Value::T_INT; }
-		value_type&			getInt()		{ return _val; }
-		value_type const&	getInt() const  { return _val; }
-
-};
+	std::cout << "\e[0;30;47m" << header.str() << "\e[0m" << std::endl;
+	if (description)
+	{
+		std::cout << "\e[0;30;47m" << centeredString(description, header.str().length())
+		<< "\e[0m" << std::endl;
+	}
+}
 
 int	main(int argc, const char *argv[])
 {
 	if (argc != 2) {
 		std::cerr << "Bruh" << std::endl;
 		return 1;
-	}
-	newtest();
-	{
-		Base* base1 = static_cast<Base*>(new Integer(42));
-		Base* base2 = static_cast<Base*>(new String);
-		std::cout << P_TYPE(base1->getType()) << std::endl;
-		std::cout << P_TYPE(base2->getType()) << std::endl;
-		delete base1;
-		delete base2;
-	}
-	newtest();
-	{
-		std::vector<Base*>	vecbase;
-		vecbase.push_back(new Integer(42));
-		vecbase.push_back(new String);
-		vecbase.push_back(new Integer(42));
-
-		for (size_t i = 0; i < vecbase.size(); ++i) {
-			std::cout << P_TYPE(vecbase[i]->getType()) << std::endl;
-			delete vecbase[i];
-		}
-	}
-	newtest();
-	try
-	{
-		std::vector<Base>	vecbase;
-		vecbase.push_back(Integer(42));
-		vecbase.push_back(String());
-
-		Base*	test = &vecbase[0];
-		std::cout << P_TYPE(test->getType()) << std::endl;
-		Integer* test2 = static_cast<Integer*>(&vecbase[0]);
-		std::cout << P_TYPE(test2->getType()) << std::endl;
-		Integer &test3 = dynamic_cast<Integer&>(vecbase[0]);
-		std::cout << P_TYPE(test3.getType()) << std::endl;
-	}
-	catch (std::exception const& e)
-	{
-		std::cout << "Caught exception " << e.what() << std::endl;
-	}
-	newtest();
-	{
-		Base* base1 = static_cast<Base*>(new Integer(42));
-		Base* base2 = static_cast<Base*>(new String);
-		std::cout << P_TYPE(base1->getType()) << std::endl;
-		std::cout << "IsInt(): " << base1->isInt() << std::endl;
-		std::cout << P_TYPE(base2->getType()) << std::endl;
-		std::cout << "IsInt(): " << base2->isInt() << std::endl;
-		delete base1;
-		delete base2;
-	}
-	newtest();
-	{
-		Base* base1 = static_cast<Base*>(new Integer(42));
-		std::cout << P_TYPE(base1->getType()) << std::endl;
-		std::cout << "IsInt(): " << base1->isInt() << std::endl;
-		std::cout << "value: " << base1->getInt() << std::endl;
-		delete base1;
 	}
 	newtest();
 	{
@@ -150,11 +68,13 @@ int	main(int argc, const char *argv[])
 		}
 	}
 	newtest();
+	try
 	{
 		Document	doc(argv[1]);
 		doc.parse();
-		std::cout << P_TYPE( doc["rootString"].type() ) << std::endl;
-		std::cout << '['<<doc["rootString"]<<']' << std::endl;
+
+		std::cout << P_TYPE( doc.at("rootString").type() ) << std::endl;
+		std::cout << '['<<doc.at("rootString")<<']' << std::endl;
 		
 		std::cout << P_TYPE( doc["main"].type() ) << std::endl;
 		std::cout << '['<<doc["main"]<<']' << std::endl;
@@ -167,90 +87,39 @@ int	main(int argc, const char *argv[])
 		std::cout << P_TYPE( subdoc["bool"].type() ) << std::endl;
 		std::cout << '['<<subdoc["bool"]<<']' << std::endl;
 	}
-	newtest();
+	catch (std::out_of_range const& e)
+	{
+		std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
+	}
+	newtest("Nested operator[]");
+	try
 	{
 		Document	doc;
 		doc.parse(argv[1]);
-		std::cout << P_TYPE( doc["rootString"].type() ) << std::endl;
-		std::cout << '['<<doc["rootString"]<<']' << std::endl;
+		std::cout << P_TYPE( doc.at("rootString").type() ) << std::endl;
+		std::cout << '['<<doc.at("rootString")<<']' << std::endl;
 		
 		std::cout << P_TYPE( doc["main"]["sub"]["bool"].type() ) << std::endl;
 		std::cout << '['<< doc["main"]["sub"]["bool"] <<']' << std::endl;
 	}
-	newtest();
+	catch (std::out_of_range const& e)
 	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::iterator	osef = doc.begin();
-		std::cout << P_TYPE( osef->type() ) << std::endl;
-		++osef;
-		std::cout << P_TYPE( osef->type() ) << std::endl;
+		std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
 	}
-	newtest();
+	newtest("Nested at()");
+	try
 	{
-		Document	doc(argv[1]);
-		doc.parse();
-		std::cout << '['<<doc["main"]<<']' << std::endl;
-		std::cout << '['<<doc["test"]<<']' << std::endl;
+		Document	doc;
+		doc.parse(argv[1]);
+		std::cout << P_TYPE( doc.at("rootString").type() ) << std::endl;
+		std::cout << '['<<doc.at("rootString")<<']' << std::endl;
+		
+		std::cout << P_TYPE( at("main").at("sub").at("bool").type() ) << std::endl;
+		std::cout << '['<< at("main").at("sub").at("bool") <<']' << std::endl;
 	}
-	newtest();
+	catch (std::out_of_range const& e)
 	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::iterator	osef = doc.begin();
-		for (int i = 0; i < 6; ++i) {
-			std::cout << P_TYPE( osef->type() ) << '\t'
-				<< *osef << std::endl;
-			++osef;
-		}
-	}
-	newtest();
-	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::iterator	osef = doc.begin();
-		osef->Str().erase();
-		for (; osef != doc.end(); ++osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t'
-				<< *osef << std::endl;
-		}
-	}
-	newtest();
-	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::const_iterator	osef = doc.begin();
-		// osef->Str().erase(); // Should not compile
-		for (; osef != doc.end(); ++osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t'
-				<< *osef << std::endl;
-		}
-	}
-	newtest();
-	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::iterator	osef = doc.begin();
-		for (int i = 0; i < 5; ++i, ++osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
-		}
-		std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
-
-		std::cout << F_YEL("\n* Beep, beep, beep *\n") << std::endl;
-		for (int i = 0; i < 5; ++i, --osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
-		}
-		std::cout << P_TYPE( osef->type() ) << '\t' << *osef << std::endl;
-	}
-	newtest();
-	{
-		Document	doc(argv[1]);
-		doc.parse();
-		Document::reverse_iterator	osef = doc.rbegin();
-		for (; osef != doc.rend(); ++osef) {
-			std::cout << P_TYPE( osef->type() ) << '\t'
-				<< *osef << std::endl;
-		}
+		std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
 	}
 	return 0;
 }

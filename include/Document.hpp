@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 08:11:54 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 06:38:19 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,46 +52,6 @@ class parse_error : public std::exception
 		virtual ~parse_error() throw() {}
 };
 
-template < class T >
-class DocumentIterator // FIXME: If the root of the Document starts with a group, EVERYTHING DIES
-{
-	public:
-		typedef typename	std::ptrdiff_t						difference_type;
-		typedef 			T									value_type;
-		typedef				T*									pointer;
-		typedef				T&									reference;
-		typedef typename	std::bidirectional_iterator_tag		iterator_category;
-	
-	private:
-		typedef typename	std::vector<T>::iterator	value_iterator;
-		value_type*		_root;
-
-		std::stack< std::pair<value_type*, value_iterator> >	_stack;
-	
-	public:
-		DocumentIterator(reference root, value_iterator value)
-			: _root(&root)
-			{
-				_stack.push(std::make_pair(&root, value));
-			}
-
-		inline operator DocumentIterator<const T>() const
-		{
-			return DocumentIterator<const T>(*_root, _stack.top().second);
-		}
-
-		inline reference	operator* () const { return _stack.top().second.operator*();	}
-		inline pointer		operator->() const { return _stack.top().second.operator->();	}
-
-		DocumentIterator&	operator++(); // pre
-		DocumentIterator	operator++(int); // post
-		DocumentIterator&	operator--(); // TESTME (or don't, if it fails I'm gonna cry)
-		DocumentIterator	operator--(int); // TESTME (or don't, if it fails I'm gonna cry)
-
-		inline bool	operator==(DocumentIterator const& rhs)	{ return (_stack.top().second == rhs._stack.top().second);	}
-		inline bool	operator!=(DocumentIterator const& rhs)	{ return (_stack.top().second != rhs._stack.top().second);	}
-};
-
 class Document
 {
 	public:
@@ -102,10 +62,8 @@ class Document
 		typedef	Value const&							const_reference;
 		typedef Value*									pointer;
 		typedef Value const*							const_pointer;
-		typedef DocumentIterator<Value>					iterator;
-		typedef DocumentIterator<const Value>			const_iterator;
-		typedef	std::reverse_iterator<iterator>			reverse_iterator;
-		typedef	std::reverse_iterator<const_iterator>	const_reverse_iterator;
+		
+		// No iterators for now. They're in their own branch until I figure out wtf am I doing.
 
 	private:
 		Value			_root;
@@ -166,22 +124,6 @@ class Document
 
 		bool	parse(std::string const& path);
 		bool	parse();
-
-		iterator		begin()			{ return iterator(_root, _root._hashmap.begin());		}
-		const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
-		const_iterator	cbegin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
-
-		iterator		end()			{ return iterator(_root, _root._hashmap.end());			}
-		const_iterator	end() const		{ return const_iterator(_root, _root._hashmap.end());	}
-		const_iterator	cend() const	{ return const_iterator(_root, _root._hashmap.end());	}
-
-		reverse_iterator		rbegin()		{ return reverse_iterator(end());		}
-		const_reverse_iterator	rbegin() const	{ return const_reverse_iterator(end());	}
-		const_reverse_iterator	crbegin() const	{ return const_reverse_iterator(end());	}
-
-		reverse_iterator		rend()			{ return reverse_iterator(begin());			}
-		const_reverse_iterator	rend() const	{ return const_reverse_iterator(begin());	}
-		const_reverse_iterator	crend() const	{ return const_reverse_iterator(begin());	}
 };
 
 // ============================================================================================== //

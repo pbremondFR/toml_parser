@@ -6,116 +6,13 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 03:18:20 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 06:37:46 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "Document.hpp"
-
-// ============================================================================================== //
-// ------------------------------------------ ITERATOR ------------------------------------------ //
-// ============================================================================================== //
-
-// Go through hasmap. If you find a group, go in it. If you're at the end of the hashmap,
-// go to the parent group of the current group.
-template < class T >
-DocumentIterator<T>&	DocumentIterator<T>::operator++()
-{
-	assert(_root->isGroup());
-
-	std::cerr << HBLU"### ++ ###" << std::endl;
-	++(_stack.top().second); // Increase iterator
-
-	yolo:
-	while (_stack.top().second < _stack.top().first->_hashmap.end()
-		&& _stack.top().second->isGroup())
-	{
-		std::cerr << "# ↓ Pushing stack" << std::endl;
-		_stack.push( std::make_pair(_stack.top().second.operator->(),
-				_stack.top().second->_hashmap.begin()) ); // Lord forgive me for I have sinned
-		std::cerr << "# Stack top after push: " << *_stack.top().first << std::endl;
-	}
-	while (_stack.top().second >= (_stack.top().first->_hashmap.end())
-		&& _stack.size() > 1)
-	{
-		std::cerr << "# Stack top BEFORE: " << *_stack.top().first << std::endl;
-		std::cerr << "# ↑ Popping stack" << std::endl;
-		_stack.pop();
-		if (_stack.size()) {
-			++(_stack.top().second);
-			std::cerr << "# Stack top after pop: " << *_stack.top().first << std::endl;
-		}
-		goto yolo; // NOTE: "I have humiliated myself and will now commit suicide"
-	}
-	std::cerr << "##########\n"RESET << std::endl;
-
-	return *this; // tmp
-}
-
-template < class T >
-DocumentIterator<T>	DocumentIterator<T>::operator++(int)
-{
-	DocumentIterator	tmp(*this);
-	operator++();
-	return (tmp);
-}
-
-template < class T >
-DocumentIterator<T>&	DocumentIterator<T>::operator--()
-{
-	assert(_root->isGroup());
-
-	std::cerr << HBLU"### -- ###" << std::endl;
-	--(_stack.top().second); // Increase iterator
-
-	yolo:
-	while (_stack.top().second >= _stack.top().first->_hashmap.begin()
-		&& _stack.top().second->isGroup())
-	{
-		std::cerr << "## Stack top BEFORE: " << *_stack.top().first << "\n## "
-			<< *_stack.top().second << std::endl;
-		std::cerr << "$$ " << ((_stack.top().second->_hashmap.begin())).operator->() << std::endl;
-		
-		std::cerr << BLUHB"# ↓ Pushing stack"HBLU << std::endl;
-		
-		if (_stack.top().second->groupSize())
-			_stack.push( std::make_pair(_stack.top().second.operator->(),
-					_stack.top().second->_hashmap.end() - 1) ); // Lord forgive me for I have sinned
-		else
-			--(_stack.top().second);					
-
-		std::cerr << "## Stack top after push:\n## " << *_stack.top().first << "\n## ";
-				// << *_stack.top().second << std::endl;
-	}
-	while (_stack.top().second < (_stack.top().first->_hashmap.begin()) // iterator >= _hashmap.end()
-		&& _stack.size() > 1)
-	{
-		std::cerr << "# Stack top BEFORE: " << *_stack.top().first << std::endl;
-		std::cerr << BLUHB"# ↑ Popping stack"HBLU << std::endl;
-
-		_stack.pop();
-		if (_stack.size()) {
-			--(_stack.top().second);
-
-			std::cerr << "## Stack top after pop:\n## " << *_stack.top().first << "\n## ";
-				// << *_stack.top().second << std::endl;
-		}
-		goto yolo; // NOTE: "I have humiliated myself and will now commit suicide"
-	}
-	std::cerr << "##########\n"RESET << std::endl;
-
-	return *this; // tmp
-}
-
-template < class T >
-DocumentIterator<T>	DocumentIterator<T>::operator--(int)
-{
-	DocumentIterator	tmp(*this);
-	operator--();
-	return (tmp);
-}
 
 // ============================================================================================== //
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
