@@ -114,8 +114,8 @@ int	main(int argc, const char *argv[])
 		std::cout << P_TYPE( doc.at("rootString").type() ) << std::endl;
 		std::cout << '['<<doc.at("rootString")<<']' << std::endl;
 		
-		std::cout << P_TYPE( at("main").at("sub").at("bool").type() ) << std::endl;
-		std::cout << '['<< at("main").at("sub").at("bool") <<']' << std::endl;
+		std::cout << P_TYPE( doc.at("main").at("sub").at("bool").type() ) << std::endl;
+		std::cout << '['<< doc.at("main").at("sub").at("bool") <<']' << std::endl;
 	}
 	catch (std::out_of_range const& e)
 	{
