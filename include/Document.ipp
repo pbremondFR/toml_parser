@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 11:54:18 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 14:20:39 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,15 +317,11 @@ Value	Document::_parseArray(std::string const& key, std::string::const_iterator&
 	_skipWhitespaces(++it, line.end());
 	const Value::e_type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
 	assert(array_type != Value::T_UNDEF);
-	// std::cout << _YEL << (P_TYPE(array_type)) << RESET << std::endl;
 
 	Value	array(key, array_type);
 	while (it != line.end() && *it != ']')
 	{
 		const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
-		// std::cout << _CYN << (P_TYPE(type)) << RESET << std::endl;
-		// std::cout << _CYN << std::string(it, _endofArrayIt(it, line.end())) << RESET << std::endl;
-		// std::cout << _BLU << std::string(it, str_const_it(line.end())) << RESET << std::endl;
 		if (type != array_type)
 			throw parse_error("Array contains different types", lineNum);
 		switch (array_type)

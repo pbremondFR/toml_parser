@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 13:34:43 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 14:30:43 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,6 @@ class Value
 
 		inline bool_type	isFundamental() const noexcept { return (isInt() || isFloat()); }
 
-		inline size_type	strSize()	const { if (isStr())	return _str.size();		throw (bad_type("Value::strSize()"));	}
 		inline size_type	groupSize()	const { if (isGroup())	return _hashmap.size();	throw (bad_type("Value::groupSize()"));	}
 
 		// TODO: Add Array()
@@ -133,10 +132,10 @@ class Value
 		inline string_type&			Str()	{ if (isStr())	 return _str;	throw (bad_type("Value::Str()"));	}
 		inline group_type&			Group()	{ if (isGroup()) return *this;	throw (bad_type("Value::Group()"));	}
 
-		inline int_type const&		Int()	const { if (isInt())	return _int;	throw (bad_type("Value::Int()"));		}
+		inline int_type const&		Int()	const { if (isInt())	return _int;	throw (bad_type("Value::Int()"));	}
 		inline float_type const&	Float()	const { if (isFloat())	return _float;	throw (bad_type("Value::Float()"));	}
-		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw (bad_type("Value::Bool()"));		}
-		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Value::Str()"));		}
+		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw (bad_type("Value::Bool()"));	}
+		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Value::Str()"));	}
 		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw (bad_type("Value::Group()"));	}
 
 		inline string_type&			key()		noexcept { return _key; }
@@ -165,7 +164,6 @@ class Value
 		array_const_iterator	begin() const	{ return _array.begin(); }
 		array_iterator			end()			{ return _array.end(); }
 		array_const_iterator	end() const		{ return _array.end(); }
-
 		array_reverse_iterator			rbegin()			{ return _array.rbegin(); }
 		array_const_reverse_iterator	rbegin() const		{ return _array.rbegin(); }
 		array_reverse_iterator			rend()				{ return _array.rend(); }

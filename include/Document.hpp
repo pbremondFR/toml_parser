@@ -6,12 +6,13 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 13:25:33 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 14:55:57 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -91,25 +92,21 @@ class Document
 			return (first != last && *first != '#');
 		}
 		
-		void	_parseGroup(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
-		void	_parseKeyValue(std::string::const_iterator it, std::string& line, std::size_t& lineNum,
-					std::ifstream& fs);
+		void	_parseGroup(str_const_it it, std::string const& line, std::size_t lineNum);
+		void	_parseKeyValue(str_const_it it, std::string& line, std::size_t& lineNum, std::ifstream& fs);
 
-		Value::int_type		_parseInt(str_const_it it, str_const_it end, std::size_t lineNum);
-		Value::float_type	_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum);
-		Value::bool_type	_parseBool(str_const_it it, str_const_it end, std::size_t lineNum);
+		Value::int_type		_parseInt	(str_const_it it, str_const_it end, std::size_t lineNum);
+		Value::float_type	_parseFloat	(str_const_it it, str_const_it end, std::size_t lineNum);
+		Value::bool_type	_parseBool	(str_const_it it, str_const_it end, std::size_t lineNum);
 
-		Value::string_type	_parseString(str_const_it it, str_const_it end,
-								std::size_t lineNum);
 		void	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
 		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
+		Value::string_type	_parseString(str_const_it it, str_const_it end, std::size_t lineNum);
 
-		Value::string_type::const_iterator
-			_nextArrayVal(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
-		Value::string_type::const_iterator
-			_endofArrayIt(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
-		Value	_parseArray(std::string const& key, std::string::const_iterator& it,
-						std::string& line, std::size_t& lineNum, std::ifstream& fs);
+		str_const_it	_nextArrayVal(str_const_it it, str_const_it end) const;
+		str_const_it	_endofArrayIt(str_const_it it, str_const_it end) const;
+		Value	_parseArray(std::string const& key, str_const_it& it, std::string& line,
+					std::size_t& lineNum, std::ifstream& fs);
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
