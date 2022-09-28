@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 07:06:30 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 10:07:09 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ class Value
 			bool		_bool;
 		};
 		string_type		_str; // I want C++11 :'(
+		std::vector<Value>	_array; // TODO: Merge me with _hashmap once you've got everything settled
+		const e_type		_array_type;
 		std::vector<Value>	_hashmap; // lol
 
 		string_type		_key;
@@ -101,8 +103,9 @@ class Value
 
 	public:
 		explicit Value(string_type const& key, float_type floating, e_type type);
-		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
-		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) { }
+		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _array_type(T_UNDEF), _key(key) {}
+		explicit Value(string_type const& key, e_type array_type) : _type(T_ARRAY), _array_type(array_type), _key(key) {}
+		explicit Value(string_type const& key) : _type(T_GROUP), _array_type(T_UNDEF), _key(key), _undefinedGroup(true) { }
 
 		inline e_type		type() const noexcept { return _type; }
 
@@ -110,6 +113,7 @@ class Value
 		inline bool_type	isFloat()	const noexcept { return (_type == T_FLOAT);		}
 		inline bool_type	isBool()	const noexcept { return (_type == T_BOOL);		}
 		inline bool_type	isStr()		const noexcept { return (_type == T_STRING);	}
+		inline bool_type	isArray()	const noexcept { return (_type == T_ARRAY);		}
 		inline bool_type	isGroup()	const noexcept { return (_type == T_GROUP);		}
 
 		inline bool_type	isFundamental() const noexcept { return (isInt() || isFloat()); }
@@ -117,6 +121,7 @@ class Value
 		inline size_type	strSize()	const { if (isStr())	return _str.size();		throw (bad_type("Value::strSize()"));	}
 		inline size_type	groupSize()	const { if (isGroup())	return _hashmap.size();	throw (bad_type("Value::groupSize()"));	}
 
+		// TODO: Add Array()
 		inline int_type&			Int()	{ if (isInt())	 return _int;	throw (bad_type("Value::Int()"));	}
 		inline float_type&			Float()	{ if (isFloat()) return _float;	throw (bad_type("Value::Float()"));	}
 		inline bool_type&			Bool()	{ if (isBool())	 return _bool;	throw (bad_type("Value::Bool()"));	}
@@ -144,7 +149,8 @@ class Value
 		bool_type	set(string_type const& string); // String assignment cannot guarantee a noexcept
 		bool_type	set(group_type const& group); // String assignment cannot guarantee a noexcept
 
-		Value	*group_addValue(Value const& val); // TESTME: logic
+		Value	*group_addValue(Value const& val);
+		void	array_addValue(Value const& val);
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
 };

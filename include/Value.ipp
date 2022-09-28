@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/26 22:36:53 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:25:15 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
 // ============================================================================================== //
 
-Value::Value(string_type const& key, float_type floating, e_type type) : _type(type), _key(key)
+Value::Value(string_type const& key, float_type floating, e_type type) : _type(type), _array_type(T_UNDEF),
+	_key(key)
 {
 	if (_type == T_INT)
 		_int = static_cast<int_type>(floating);
@@ -125,33 +126,53 @@ Value*	Value::group_addValue(Value const& val) // TESTME
 	return (_hashmap.end() - 1).operator->();
 }
 
+void	Value::array_addValue(Value const& value)
+{
+	if (!isArray())
+		throw bad_type("Called array_addValue() on a TOML::Value that's not an array");
+	_array.push_back(value);
+}
+
 // ============================================================================================== //
 // ---------------------------------------- OUT OF CLASS ---------------------------------------- //
 // ============================================================================================== //
 
 std::ostream&	operator<<(std::ostream& out, Value const& val)
 {
-	if (val.isInt())
-		out << val._int;
-	else if (val.isFloat())
-		out << val._float;
-	else if (val.isBool())
-		out << (val._bool == true ? "true" : "false");
-	else if (val.isStr())
-		out << val._str;
-	else if (val.isGroup())
+	switch (val.type())
 	{
-		out << "Group " << val._key << "("<<val._hashmap.size()<<")" << "->{";
-		for (std::vector<Value>::const_iterator it = val._hashmap.begin();
-			it != val._hashmap.end();
-			++it)
+		case Value::T_INT:
+			out << val._int;
+			break;
+		case Value::T_FLOAT:
+			out << val._float;
+			break;
+		case Value::T_BOOL:
+			out << (val._bool == true ? "true" : "false");
+			break;
+		case Value::T_STRING:
+			out << val._str;
+			break;
+		case Value::T_GROUP:
 		{
-			out << *it << (it == val._hashmap.end() - 1 ? " " : ", ");
+			out << "Group " << val._key << "("<<val._hashmap.size()<<")" << "->{ ";
+			for (std::vector<Value>::const_iterator it = val._hashmap.begin(); it != val._hashmap.end(); ++it)
+				out << *it << (it == val._hashmap.end() - 1 ? " " : ", ");
+			out << "}";
+			break;
 		}
-		out << "}";
+		case Value::T_ARRAY:
+		{
+			out << '[';
+			for (std::vector<Value>::const_iterator it = val._array.begin(); it != val._array.end(); ++it)
+				out << *it << (it == val._array.end() - 1 ? "" : ", ");
+			out << ']';
+			break;
+		}
+		default:
+			out << "TODO";
+			break;
 	}
-	else
-		out << "TODO";
 	return out;
 }
 
@@ -169,6 +190,8 @@ const char* typeToChar(TOML::Value::e_type type)
 			return ("String");
 		case TOML::Value::T_GROUP:
 			return ("Group");
+		case TOML::Value::T_ARRAY:
+			return ("Array");
 		case TOML::Value::T_UNDEF:
 			return ("Undefined");
 		default:

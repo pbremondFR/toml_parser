@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 07:07:53 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:20:44 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,16 +72,8 @@ class Document
 		bool			_isParsed;
 
 	private:
-		// enum e_value_type // FIXME: Use same enum across Value and Document
-		// {
-		// 	INT,
-		// 	FLOAT,
-		// 	BOOL,
-		// 	STRING,
-		// 	DATE,
-		// 	ARRAY,
-		// 	UNDEF
-		// };
+		typedef Value::string_type::const_iterator	str_const_it;
+		
 		static inline bool	_isSpace(char c) noexcept { return (c == 0x09 || c == 0x20); }
 		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end) noexcept
 		{
@@ -100,15 +92,24 @@ class Document
 		}
 		
 		void	_parseGroup(std::string::const_iterator it, std::string const& line, std::size_t lineNum);
-		void	_parseKeyValue(std::string::const_iterator it, std::string const& line, std::size_t& lineNum,
-			std::ifstream& fs);
+		void	_parseKeyValue(std::string::const_iterator it, std::string& line, std::size_t& lineNum,
+					std::ifstream& fs);
 
-		void	_parseString(std::string const& key, std::string::const_iterator it, std::string const& line, std::size_t lineNum);
+		Value::int_type		_parseInt(str_const_it it, str_const_it end, std::size_t lineNum);
+		Value::float_type	_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum);
+		Value::bool_type	_parseBool(str_const_it it, str_const_it end, std::size_t lineNum);
+
+		Value::string_type	_parseString(str_const_it it, str_const_it end,
+								std::size_t lineNum);
 		void	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
 		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
 
-		void	_parseArray(std::string const& key, std::string::const_iterator& it,
-			std::string const& line, std::size_t& lineNum, std::ifstream& fs);
+		Value::string_type::const_iterator
+			_nextArrayVal(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
+		Value::string_type::const_iterator
+			_endofArrayVal(Value::string_type::const_iterator it, Value::string_type::const_iterator end) const;
+		void		_parseArray(std::string const& key, std::string::const_iterator& it,
+						std::string& line, std::size_t& lineNum, std::ifstream& fs);
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root

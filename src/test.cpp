@@ -129,5 +129,24 @@ int	main(int argc, const char *argv[])
 		std::cout << doc["test"]["salut"] << std::endl;
 		std::cout << doc["test"]["coucou"] << std::endl;
 	}
+	newtest("Array");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+
+		Document	test_a = doc["test"]["a"].Group();
+
+		std::cout << P_TYPE( test_a["simple1"].type() ) << std::endl;
+		std::cout << test_a["simple1"] << std::endl;
+
+		std::cout << P_TYPE( test_a["simple2"].type() ) << std::endl;
+		std::cout << test_a["simple2"] << std::endl;
+		
+		std::cout << P_TYPE( test_a["simple3"].type() ) << std::endl;
+		std::cout << test_a["simple3"] << std::endl;
+
+		std::cout << P_TYPE( test_a["simple4"].type() ) << std::endl;
+		std::cout << test_a["simple4"] << std::endl;
+	}
 	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 07:10:33 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:21:19 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,14 +150,12 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	_currentGroup->_undefinedGroup = false;
 }
 
-void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string const& line, std::size_t& lineNum,
+void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& line, std::size_t& lineNum,
 	std::ifstream& fs)
 {
 	(void)fs;
-	typedef	std::string::const_iterator		str_const_it;
-	
 	// Get the key
-	str_const_it	it = src_it;
+	std::string::const_iterator	it = src_it;
 	for (; it != line.end() && _isBareKeyChar(*it); ++it) ;
 	if (!_isSpace(*it) && *it != '#' && *it != '=')
 		throw (parse_error("Illegal key character at line ", lineNum));
@@ -173,53 +171,69 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 	switch (_guessValueType(it, line.end()))
 	{
 		case Value::T_STRING:
-			_parseString(key, it, line, lineNum);
+			_currentGroup->group_addValue( Value(key, _parseString(it, line.end(), lineNum)) );
 			break;
 		case Value::T_INT:
-		{
-			Value::int_type	val;
-			#ifdef __linux
-				std::sscanf(it.base(), "%ld", &val); // Just rewrite your own func, dude
-			#else
-				std::sscanf(it.base(), "%lld", &val); // Just rewrite your own func, dude
-			#endif
-			for (; it != line.end() && (isdigit(*it) || *it == '-'); ++it) ;
-			if (_hasNonWhitespace(it, line.end()))
-				throw (parse_error("Illegal floating point value", lineNum));
-			_currentGroup->group_addValue(Value(key, val, Value::T_INT));
+			_currentGroup->group_addValue( Value(key, _parseInt(it, line.end(), lineNum), Value::T_INT) );
 			break;
-		}
 		case Value::T_FLOAT:
-		{
-			Value::float_type	val;
-			std::sscanf(it.base(), "%lf", &val); // Just rewrite your own func, dude
-			for (; it != line.end() && (isdigit(*it) || *it == '-' || *it == '.'); ++it) ;
-			if (_hasNonWhitespace(it, line.end()))
-				throw (parse_error("Illegal floating point value", lineNum));
-			_currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
+			_currentGroup->group_addValue( Value(key, _parseFloat(it, line.end(), lineNum), Value::T_FLOAT) );
 			break;
-		}
 		case Value::T_BOOL:
-		{ // FIXME, Shit code but I'm tired
-			Value::bool_type	val;
-			str_const_it last = std::find(it, str_const_it(line.end()), 'e');
-			std::string	tmp(it, ++last);
-			if ((tmp != "true" && tmp != "false") || _hasNonWhitespace(last, line.end()))
-				throw (parse_error("Illegal boolean value", lineNum));
-			val = (tmp == "true" ? true : false);
-			_currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
+			_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), Value::T_BOOL) );
 			break;
-		}
 		case Value::T_DATE:
 			std::cout << "date case" << std::endl;
 			break;
-		case Value::T_ARRAY: // TODO: Do that next. It's the most important.
-			std::cout << "array case" << std::endl;
+		case Value::T_ARRAY:
+			// std::cout << "Uncomment me you dipshit" << std::endl;
+			_parseArray(key, it, line, lineNum, fs);
 			break;
 		// case Value::T_UNDEF:
 		default:
 			throw (parse_error("Illegal or missing value", lineNum));
 	}
+}
+
+Value::int_type	Document::_parseInt(str_const_it it, str_const_it end,
+	std::size_t lineNum)
+{
+	Value::int_type	val;
+	#ifdef __linux
+		std::sscanf(it.base(), "%ld", &val);
+	#else
+		std::sscanf(it.base(), "%lld", &val); // Just rewrite your own func, dude
+	#endif
+	for (; it != end && (isdigit(*it) || *it == '-'); ++it) ;
+	if (_hasNonWhitespace(it, end))
+		throw (parse_error("Illegal integer value", lineNum));
+	return val;
+	// _currentGroup->group_addValue(Value(key, val, Value::T_INT));
+}
+
+Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum)
+{
+	Value::float_type	val;
+	std::sscanf(it.base(), "%lf", &val); // Just rewrite your own func, dude
+	for (; it != end && (isdigit(*it) || *it == '-' || *it == '.'); ++it) ;
+	if (_hasNonWhitespace(it, end))
+		throw (parse_error("Illegal floating point value", lineNum));
+	return val;
+	// _currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
+}
+
+Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::size_t lineNum)
+{ // FIXME, Shit code but I'm tired
+	typedef	std::string::const_iterator		str_const_it;
+	
+	Value::bool_type	val;
+	str_const_it last = std::find(it, str_const_it(end), 'e');
+	std::string	tmp(it, ++last);
+	if ((tmp != "true" && tmp != "false") || _hasNonWhitespace(last, end))
+		throw (parse_error("Illegal boolean value", lineNum));
+	val = (tmp == "true" ? true : false);
+	return val;
+	// _currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
 }
 
 void	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str,
@@ -248,12 +262,11 @@ void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_
 	// the 🗿 emoji.
 }
 
-void	Document::_parseString(std::string const& key, std::string::const_iterator it,
-	std::string const& line, std::size_t lineNum)
+Value::string_type	Document::_parseString(str_const_it it, str_const_it end, std::size_t lineNum)
 {
 	typedef	std::string::const_iterator		str_const_it;
 
-	std::string	raw_str(it, line.end());
+	std::string	raw_str(it, end);
 	// Loop through all backslashes, replacing them each time
 	for (std::string::iterator it = std::find(raw_str.begin(), raw_str.end(), '\\');
 		it != raw_str.end();
@@ -275,12 +288,68 @@ void	Document::_parseString(std::string const& key, std::string::const_iterator 
 	raw_str.erase(last_quote - 1, raw_str.end());
 	raw_str.erase(0, 1);
 
-	_currentGroup->group_addValue( Value(key, raw_str) );
+	return raw_str;
+	// _currentGroup->group_addValue( Value(key, raw_str) );
+}
+
+Value::string_type::const_iterator	Document::_nextArrayVal(Value::string_type::const_iterator it,
+	Value::string_type::const_iterator end) const
+{
+	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
+	_skipWhitespaces(++it, end);
+	return it;
+}
+
+Value::string_type::const_iterator	Document::_endofArrayVal(Value::string_type::const_iterator it,
+	Value::string_type::const_iterator end) const
+{
+	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
+	return it;
 }
 
 // Expects it to be pointing to a '['
-// void	_parseArray(std::string const& key, std::string::const_iterator& it,
-// 	std::string const& line, std::size_t& lineNum, std::ifstream& fs)
-// {
-// 	_skipWhitespaces(++it, line.end());
-// }
+void	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
+	std::string& line, std::size_t& lineNum, std::ifstream& fs)
+{
+	(void)fs;
+	_skipWhitespaces(++it, line.end());
+	const Value::e_type	array_type = _guessValueType(it, _endofArrayVal(it, line.end()));
+	assert(array_type != Value::T_UNDEF);
+	// std::cout << _YEL << (P_TYPE(array_type)) << RESET << std::endl;
+
+	Value	array(key, array_type);
+	while (it != line.end() && *it != ']')
+	{
+		const Value::e_type	type = _guessValueType(it, _endofArrayVal(it, line.end()));
+		// std::cout << _CYN << (P_TYPE(type)) << RESET << std::endl;
+		// std::cout << _CYN << std::string(it, _endofArrayVal(it, line.end())) << RESET << std::endl;
+		// std::cout << _BLU << std::string(it, str_const_it(line.end())) << RESET << std::endl;
+		if (type != array_type)
+			throw parse_error("Array contains different types", lineNum);
+		switch (type)
+		{
+			case Value::T_INT:
+				array.array_addValue( Value("", _parseInt(it, _endofArrayVal(it, line.end()), lineNum), Value::T_INT) );
+				break;
+			case Value::T_FLOAT:
+				array.array_addValue( Value("", _parseFloat(it, _endofArrayVal(it, line.end()), lineNum), Value::T_FLOAT) );
+				break;
+			case Value::T_BOOL:
+				array.array_addValue( Value("", _parseBool(it, _endofArrayVal(it, line.end()), lineNum), Value::T_BOOL) );
+				break;
+			case Value::T_STRING:
+				array.array_addValue( Value("", _parseString(it, _endofArrayVal(it, line.end()), lineNum)) );
+				break;
+			case Value::T_DATE:
+				; // TODO
+				break;
+			// case Value::T_ARRAY:
+			// 	array.array_addValue( Value("", ))
+			// 	break;
+			default:
+				throw parse_error("Unexpected item in array", lineNum);
+		}
+		it = _nextArrayVal(it, line.end());
+	}
+	_currentGroup->group_addValue(array);
+}
