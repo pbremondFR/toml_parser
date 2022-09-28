@@ -121,5 +121,13 @@ int	main(int argc, const char *argv[])
 	{
 		std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
 	}
+	newtest("Strings");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+
+		std::cout << doc["test"]["salut"] << std::endl;
+		std::cout << doc["test"]["coucou"] << std::endl;
+	}
 	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 00:30:23 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 07:06:30 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ class Value
 			T_BOOL,
 			T_STRING,
 			T_GROUP,
+			T_DATE,
+			T_ARRAY,
 			T_UNDEF
 		};
 

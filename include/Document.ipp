@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 06:37:46 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 07:10:33 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,24 +18,24 @@
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
 // ============================================================================================== //
 
-Document::e_value_type
+Value::e_type
 	Document::_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end)
 {
 	if (*it == '\"')
-		return STRING;
+		return Value::T_STRING;
 	else if (*it == 't' || *it == 'f')
-		return BOOL;
+		return Value::T_BOOL;
 	else if (*it == '[')
-		return ARRAY;
+		return Value::T_ARRAY;
 	else if (isdigit(*it) || *it == '-')
 	{
 		if (std::find(it, end, '.') != end)
-			return FLOAT;
+			return Value::T_FLOAT;
 		else
-			return INT;
+			return Value::T_INT;
 	}
 	else
-		return UNDEF;
+		return Value::T_UNDEF;
 }
 
 Value&			Document::at(std::string const& key)
@@ -172,10 +172,10 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 	// Get and parse the value
 	switch (_guessValueType(it, line.end()))
 	{
-		case STRING:
+		case Value::T_STRING:
 			_parseString(key, it, line, lineNum);
 			break;
-		case INT:
+		case Value::T_INT:
 		{
 			Value::int_type	val;
 			#ifdef __linux
@@ -189,7 +189,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			_currentGroup->group_addValue(Value(key, val, Value::T_INT));
 			break;
 		}
-		case FLOAT:
+		case Value::T_FLOAT:
 		{
 			Value::float_type	val;
 			std::sscanf(it.base(), "%lf", &val); // Just rewrite your own func, dude
@@ -199,7 +199,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			_currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
 			break;
 		}
-		case BOOL:
+		case Value::T_BOOL:
 		{ // FIXME, Shit code but I'm tired
 			Value::bool_type	val;
 			str_const_it last = std::find(it, str_const_it(line.end()), 'e');
@@ -210,13 +210,14 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 			_currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
 			break;
 		}
-		case DATE:
+		case Value::T_DATE:
 			std::cout << "date case" << std::endl;
 			break;
-		case ARRAY: // TODO: Do that next. It's the most important.
+		case Value::T_ARRAY: // TODO: Do that next. It's the most important.
 			std::cout << "array case" << std::endl;
 			break;
-		case UNDEF:
+		// case Value::T_UNDEF:
+		default:
 			throw (parse_error("Illegal or missing value", lineNum));
 	}
 }
@@ -224,34 +225,16 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string co
 void	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str,
 	char escaped) const
 {
-	switch (escaped)
-	{
-		case '\"':
-			raw_str.replace(it, it + 2, "\"");
+	const char	c[] =		{ '\"',  'b',  't',  'n',  'f',  'r', '/', '\\' };
+	const char*	replace[] =	{ "\"", "\b", "\t", "\n", "\f", "\r", "/", "\\" };
+
+	int	i;
+	for (i = 0; i < 8; ++i)
+		if (escaped == c[i])
 			break;
-		case 'b':
-			raw_str.replace(it, it + 2, "\b");
-			break;
-		case 't':
-			raw_str.replace(it, it + 2, "\t");
-			break;
-		case 'n':
-			raw_str.replace(it, it + 2, "\n");
-			break;
-		case 'f':
-			raw_str.replace(it, it + 2, "\f");
-			break;
-		case 'r':
-			raw_str.replace(it, it + 2, "\r");
-			break;
-		case '/':
-			raw_str.replace(it, it + 2, "/");
-			break;
-		case '\\':
-			raw_str.replace(it, it + 2, "\\");
-			++it;
-			break;
-	}
+	raw_str.replace(it, it + 2, replace[i]);
+	if (c[i] == '\\')
+		++it;
 }
 
 // TODO: One the one hand, this is missing unicode escaping capabilities.
@@ -281,7 +264,7 @@ void	Document::_parseString(std::string const& key, std::string::const_iterator 
 		else if (*(it + 1) == 'u') // Unicode escaping
 			_parseEscapedUnicode(it, raw_str, lineNum);
 		else
-			throw (parse_error(std::string("Illegal escaped character (") + *it + *(it+1) + ')', lineNum));
+			throw (parse_error(std::string("Illegal escaped character (\\")+ *(it+1) + ')', lineNum));
 	}
 	
 	str_const_it last_quote = raw_str.begin() + raw_str.find_last_of('\"');
@@ -294,3 +277,10 @@ void	Document::_parseString(std::string const& key, std::string::const_iterator 
 
 	_currentGroup->group_addValue( Value(key, raw_str) );
 }
+
+// Expects it to be pointing to a '['
+// void	_parseArray(std::string const& key, std::string::const_iterator& it,
+// 	std::string const& line, std::size_t& lineNum, std::ifstream& fs)
+// {
+// 	_skipWhitespaces(++it, line.end());
+// }

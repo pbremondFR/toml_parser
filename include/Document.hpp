@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 06:38:19 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/09/28 07:07:53 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,16 +72,16 @@ class Document
 		bool			_isParsed;
 
 	private:
-		enum e_value_type // FIXME: Use same enum across Value and Document
-		{
-			STRING,
-			INT,
-			FLOAT,
-			BOOL,
-			DATE,
-			ARRAY,
-			UNDEF
-		};
+		// enum e_value_type // FIXME: Use same enum across Value and Document
+		// {
+		// 	INT,
+		// 	FLOAT,
+		// 	BOOL,
+		// 	STRING,
+		// 	DATE,
+		// 	ARRAY,
+		// 	UNDEF
+		// };
 		static inline bool	_isSpace(char c) noexcept { return (c == 0x09 || c == 0x20); }
 		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end) noexcept
 		{
@@ -91,7 +91,7 @@ class Document
 		{
 			return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_');
 		}
-		static e_value_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
+		static Value::e_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
 		// Returns whether or not iterator range has got non-whitespace characters. Comments are ignored.
 		static inline bool	_hasNonWhitespace(std::string::const_iterator first, std::string::const_iterator const& last)
 		{
@@ -104,11 +104,11 @@ class Document
 			std::ifstream& fs);
 
 		void	_parseString(std::string const& key, std::string::const_iterator it, std::string const& line, std::size_t lineNum);
-		void	_parseArray(std::string::const_iterator it, std::string const& line, std::size_t& lineNum,
-			std::ifstream& fs);
-
 		void	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
 		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
+
+		void	_parseArray(std::string const& key, std::string::const_iterator& it,
+			std::string const& line, std::size_t& lineNum, std::ifstream& fs);
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
