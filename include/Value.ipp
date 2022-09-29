@@ -18,6 +18,7 @@
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
 // ============================================================================================== //
 
+inline
 Value::Value(string_type const& key, float_type floating, e_type type) : _type(type), _array_type(T_UNDEF),
 	_key(key)
 {
@@ -31,6 +32,7 @@ Value::Value(string_type const& key, float_type floating, e_type type) : _type(t
 		throw (bad_type("Value: tried to construct fundamental value with non-fundamental type"));
 }
 
+inline
 Value*	Value::_getOrAddSubtable(Value const& group)
 {
 	assert(isGroup() && group.isGroup());
@@ -46,6 +48,7 @@ Value*	Value::_getOrAddSubtable(Value const& group)
 	return (_hashmap.end() - 1).operator->();
 }
 
+inline
 Value&			Value::at(std::string const& key)
 {
 	if (!isGroup())
@@ -54,6 +57,8 @@ Value&			Value::at(std::string const& key)
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
 	return *it;
 }
+
+inline
 Value const&	Value::at(std::string const& key) const
 {
 	if (!isGroup())
@@ -63,6 +68,7 @@ Value const&	Value::at(std::string const& key) const
 	return *it;
 }
 
+inline
 Value&			Value::at(size_type n)
 {
 	if (!isArray())
@@ -71,6 +77,8 @@ Value&			Value::at(size_type n)
 		throw std::out_of_range("Value::operator[]: std::out_of_range");
 	return _array[n];
 }
+
+inline
 Value const&	Value::at(size_type n) const
 {
 	if (!isArray())
@@ -80,12 +88,15 @@ Value const&	Value::at(size_type n) const
 	return _array[n];
 }
 
+inline
 Value&			Value::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
 	return *it;
 }
+
+inline
 Value const&	Value::operator[](std::string const& key) const noexcept
 {
 	std::vector<Value>::const_iterator it;
@@ -93,15 +104,19 @@ Value const&	Value::operator[](std::string const& key) const noexcept
 	return *it;
 }
 
+inline
 Value&			Value::operator[](size_type n) noexcept
 {
 	return _array[n];
 }
+
+inline
 Value const&	Value::operator[](size_type n) const noexcept
 {
 	return _array[n];
 }
 
+inline
 Value::bool_type	Value::set(float_type floating) noexcept
 {
 	if (isInt())
@@ -115,6 +130,7 @@ Value::bool_type	Value::set(float_type floating) noexcept
 	return true;
 }
 
+inline
 Value::bool_type	Value::set(string_type const& string)
 {
 	if (isStr())
@@ -124,6 +140,7 @@ Value::bool_type	Value::set(string_type const& string)
 	return true;
 }
 
+inline
 Value::bool_type	Value::set(group_type const& group)
 {
 	if (isGroup())
@@ -133,6 +150,7 @@ Value::bool_type	Value::set(group_type const& group)
 	return true;
 }
 
+inline
 Value*	Value::group_addValue(Value const& val) // TESTME
 {
 	if (!this->isGroup()) {
@@ -152,6 +170,7 @@ Value*	Value::group_addValue(Value const& val) // TESTME
 	return (_hashmap.end() - 1).operator->();
 }
 
+inline
 void	Value::array_addValue(Value const& value)
 {
 	if (!isArray())
@@ -163,6 +182,7 @@ void	Value::array_addValue(Value const& value)
 // ---------------------------------------- OUT OF CLASS ---------------------------------------- //
 // ============================================================================================== //
 
+inline
 std::ostream&	operator<<(std::ostream& out, Value const& val)
 {
 	switch (val.type())
@@ -202,6 +222,7 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 	return out;
 }
 
+inline
 const char* typeToChar(TOML::Value::e_type type)
 {
 	switch (type)

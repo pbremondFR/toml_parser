@@ -18,6 +18,7 @@
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
 // ============================================================================================== //
 
+inline
 Value::e_type
 	Document::_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end)
 {
@@ -38,6 +39,7 @@ Value::e_type
 		return Value::T_UNDEF;
 }
 
+inline
 Value&			Document::at(std::string const& key)
 {
 	for (std::vector<Value>::iterator it = _root._hashmap.begin(); it != _root._hashmap.end(); ++it)
@@ -46,6 +48,7 @@ Value&			Document::at(std::string const& key)
 	throw (std::out_of_range("TOML::Document::at(): std::out_of_range"));
 }
 
+inline
 Value const&	Document::at(std::string const& key) const
 {
 	for (std::vector<Value>::const_iterator it = _root._hashmap.begin(); it != _root._hashmap.end(); ++it)
@@ -54,6 +57,7 @@ Value const&	Document::at(std::string const& key) const
 	throw (std::out_of_range("TOML::Document::at(): std::out_of_range"));
 }
 
+inline
 Value&			Document::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;
@@ -61,6 +65,7 @@ Value&			Document::operator[](std::string const& key) noexcept
 	return *it;
 }
 
+inline
 Value const&	Document::operator[](std::string const& key) const noexcept
 {
 	std::vector<Value>::const_iterator it;
@@ -68,6 +73,7 @@ Value const&	Document::operator[](std::string const& key) const noexcept
 	return *it;
 }
 
+inline
 bool	Document::parse(std::string const& path)
 {
 	if (_isParsed)
@@ -76,6 +82,7 @@ bool	Document::parse(std::string const& path)
 	return this->parse();
 }
 
+inline
 bool	Document::parse()
 {
 	if (_isParsed)
@@ -108,6 +115,7 @@ bool	Document::parse()
 	return true;
 }
 
+inline
 void	Document::_parseGroup(std::string::const_iterator src_it, std::string const& line, std::size_t lineNum)
 {
 	typedef	std::string::const_iterator		str_const_it;
@@ -150,6 +158,7 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	_currentGroup->_undefinedGroup = false;
 }
 
+inline
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& line, std::size_t& lineNum,
 	std::ifstream& fs)
 {
@@ -194,6 +203,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 	}
 }
 
+inline
 Value::int_type	Document::_parseInt(str_const_it it, str_const_it end, std::size_t lineNum) const
 {
 	Value::int_type	val;
@@ -208,6 +218,7 @@ Value::int_type	Document::_parseInt(str_const_it it, str_const_it end, std::size
 	return val;
 }
 
+inline
 Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum) const
 {
 	Value::float_type	val;
@@ -218,6 +229,7 @@ Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::
 	return val;
 }
 
+inline
 Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::size_t lineNum) const
 { // FIXME, Shit code but I'm tired
 	typedef	std::string::const_iterator		str_const_it;
@@ -231,6 +243,7 @@ Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::si
 	return val;
 }
 
+inline
 bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& str,
 	char escaped) const
 {
@@ -245,13 +258,12 @@ bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::strin
 			break;
 		}
 	}
-	// if (c[i] == '\\')
-	// 	++it;
 	return i < n; // Return true if character has been replaced
 }
 
 // TODO: One the one hand, this is missing unicode escaping capabilities.
 // On the other hand, this is very funny. And you can just use your emoji keyboard.
+inline
 void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const
 {
 	if (!isxdigit(*(it + 2)) || !isxdigit(*(it + 3)) || !isxdigit(*(it + 4)) || !isxdigit(*(it + 5)))
@@ -261,6 +273,7 @@ void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_
 	// the 🗿 emoji.
 }
 
+inline
 Value::string_type	Document::_parseString(str_const_it src_it, str_const_it end, std::size_t lineNum) const
 {
 	std::string	newstr(++src_it, end);
@@ -281,6 +294,7 @@ Value::string_type	Document::_parseString(str_const_it src_it, str_const_it end,
 	return (Value::string_type(newstr.begin(), it));
 }
 
+inline
 Document::str_const_it	Document::_nextArrayVal(str_const_it it, str_const_it end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
@@ -290,12 +304,14 @@ Document::str_const_it	Document::_nextArrayVal(str_const_it it, str_const_it end
 	return it;
 }
 
+inline
 Document::str_const_it	Document::_endofArrayIt(str_const_it it, str_const_it end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
 	return it;
 }
 
+inline
 Document::str_const_it	Document::_getNextArrayLine(str_const_it it, std::string& line,
 	std::size_t& lineNum, std::ifstream& fs) const
 {
@@ -307,6 +323,7 @@ Document::str_const_it	Document::_getNextArrayLine(str_const_it it, std::string&
 }
 
 // Expects it to be pointing to a '['
+inline
 Value	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
 	std::string& line, std::size_t& lineNum, std::ifstream& fs) const
 {

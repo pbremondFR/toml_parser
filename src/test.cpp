@@ -4,8 +4,6 @@
 #include <map>
 #include <typeinfo>
 
-// #include "../include/unique_ptr.hpp"
-#include "../include/Value.hpp"
 #include "../include/Document.hpp"
 
 #ifndef P_TYPE
@@ -35,14 +33,14 @@ inline void	newtest(const char *description = NULL)
 	std::cout << "\e[0;30;47m" << header.str() << "\e[0m" << std::endl;
 	if (description)
 	{
-		std::cout << "\e[0;30;47m" << centeredString(description, header.str().length())
+		std::cout << "\e[30;48;5;245m" << centeredString(description, header.str().length())
 		<< "\e[0m" << std::endl;
 	}
 }
 
 int	main(int argc, const char *argv[])
 {
-	if (argc != 2) {
+	if (argc < 2) {
 		std::cerr << "Bruh" << std::endl;
 		return 1;
 	}
@@ -202,6 +200,19 @@ int	main(int argc, const char *argv[])
 		std::cout << test_a["wtf"][0][0][0] << std::endl;
 		std::cout << test_a["wtf"][0][1][0] << std::endl;
 		std::cout << test_a["wtf"][1][0][0] << std::endl;
+	}
+	newtest("Config file demo");
+	{
+		assert (argc >= 3);
+		Document	config(argv[2]);
+		config.parse();
+
+		std::cout << config["server"]["name"] << std::endl;
+		int port = config["server"]["port"].Int();
+		std::cout << "port: " << port << std::endl;
+
+		Document	location(config.at("server").at("location"));
+		std::cout << "location: " << location["root"] << std::endl;
 	}
 	return 0;
 }
