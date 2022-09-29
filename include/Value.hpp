@@ -107,9 +107,13 @@ class Value
 		Value	*_getOrAddSubtable(Value const& group);
 
 	public:
+		// Int/String/Bool constructor
 		explicit Value(string_type const& key, float_type floating, e_type type);
+		// String constructor
 		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _array_type(T_UNDEF), _key(key) {}
+		// Array constructor
 		explicit Value(string_type const& key, e_type array_type) : _type(T_ARRAY), _array_type(array_type), _key(key) {}
+		// Group constructor
 		explicit Value(string_type const& key) : _type(T_GROUP), _array_type(T_UNDEF), _key(key), _undefinedGroup(true) { }
 
 		inline e_type		type() const noexcept { return _type; }
@@ -145,6 +149,8 @@ class Value
 		Value const&	at(std::string const& key) const;
 		Value&			at(size_type n);
 		Value const&	at(size_type n) const;
+		Value			at_or(std::string const& key, Value val) const noexcept;
+		Value			at_or(size_type n, Value val) const noexcept;
 
 		Value&			operator[](std::string const& key)		 noexcept;
 		Value const&	operator[](std::string const& key) const noexcept;

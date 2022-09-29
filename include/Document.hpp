@@ -126,6 +126,7 @@ class Document
 
 		Value&			at(std::string const& key);
 		Value const&	at(std::string const& key) const;
+		Value			at_or(std::string const& key, Value) const noexcept;
 		Value&			operator[](std::string const& key)		 noexcept;
 		Value const&	operator[](std::string const& key) const noexcept;
 

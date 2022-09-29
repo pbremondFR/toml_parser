@@ -58,6 +58,15 @@ Value const&	Document::at(std::string const& key) const
 }
 
 inline
+Value	Document::at_or(std::string const& key, Value val) const noexcept
+{
+	for (std::vector<Value>::const_iterator it = _root._hashmap.begin(); it != _root._hashmap.end(); ++it)
+		if (it->_key == key)
+			return *it;
+	return val;
+}
+
+inline
 Value&			Document::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;

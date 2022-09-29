@@ -93,6 +93,24 @@ Value const&	Value::at(size_type n) const
 }
 
 inline
+Value	Value::at_or(std::string const& key, Value val) const noexcept
+{
+	std::vector<Value>::const_iterator it;
+	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	if (it == _hashmap.end())
+		return val;
+	return *it;
+}
+
+inline
+Value	Value::at_or(size_type n, Value val) const noexcept
+{
+	if (!isArray() || n > _array.size())
+		return val;
+	return _array[n];
+}
+
+inline
 Value&			Value::operator[](std::string const& key) noexcept
 {
 	std::vector<Value>::iterator it;

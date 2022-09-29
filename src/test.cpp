@@ -201,9 +201,10 @@ int	main(int argc, const char *argv[])
 		std::cout << test_a["wtf"][0][1][0] << std::endl;
 		std::cout << test_a["wtf"][1][0][0] << std::endl;
 	}
-	newtest("Config file demo");
+	if (argc >= 3)
 	{
-		assert (argc >= 3);
+		newtest("Config file demo");
+
 		Document	config(argv[2]);
 		config.parse();
 
@@ -213,6 +214,20 @@ int	main(int argc, const char *argv[])
 
 		Document	location(config.at("server").at("location"));
 		std::cout << "location: " << location["root"] << std::endl;
+	}
+	newtest("at_or()");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+
+		std::cout << doc.at_or("rootString", Value("", "default")) << std::endl;
+		std::cout << doc.at_or("pouet", Value("")) << std::endl;
+
+		std::cout << doc["test"].at_or("coucou", Value("", "default")) << std::endl;
+		std::cout << doc["test"].at_or("hello", Value("", "default")) << std::endl;
+
+		std::cout << doc["test"]["a"]["simple1"].at_or(0, Value("", 42, TOML::Value::T_INT)) << std::endl;
+		std::cout << doc["test"]["a"]["simple1"].at_or(5, Value("", 42, TOML::Value::T_INT)) << std::endl;
 	}
 	return 0;
 }
