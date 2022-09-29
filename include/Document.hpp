@@ -76,9 +76,12 @@ class Document
 		typedef Value::string_type::const_iterator	str_const_it;
 		
 		static inline bool	_isSpace(char c) noexcept { return (c == 0x09 || c == 0x20); }
+		// Skips all whitespaces and comments
 		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end) noexcept
 		{
 			for (; it != end && _isSpace(*it); ++it) ;
+			if (*it == '#')
+				it = end;
 		}
 		static inline bool _isBareKeyChar(char c) noexcept
 		{
@@ -89,7 +92,7 @@ class Document
 		static inline bool	_hasNonWhitespace(std::string::const_iterator first, std::string::const_iterator const& last)
 		{
 			_skipWhitespaces(first, last);
-			return (first != last && *first != '#');
+			return (first < last && *first != '#');
 		}
 		
 		void	_parseGroup(str_const_it it, std::string const& line, std::size_t lineNum);
@@ -99,7 +102,7 @@ class Document
 		Value::float_type	_parseFloat	(str_const_it it, str_const_it end, std::size_t lineNum) const;
 		Value::bool_type	_parseBool	(str_const_it it, str_const_it end, std::size_t lineNum) const;
 
-		void	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
+		bool	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
 		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
 		Value::string_type	_parseString(str_const_it it, str_const_it end, std::size_t lineNum) const;
 

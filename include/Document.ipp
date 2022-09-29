@@ -231,19 +231,23 @@ Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::si
 	return val;
 }
 
-void	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str,
+bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& str,
 	char escaped) const
 {
 	const char	c[] =		{ '\"',  'b',  't',  'n',  'f',  'r', '/', '\\' };
 	const char*	replace[] =	{ "\"", "\b", "\t", "\n", "\f", "\r", "/", "\\" };
+	const std::size_t n =	(sizeof(c) / sizeof(c[0]));
 
-	int	i;
-	for (i = 0; i < 8; ++i)
-		if (escaped == c[i])
+	std::size_t	i;
+	for (i = 0; i < n; ++i) {
+		if (escaped == c[i]) {
+			str.replace(it, it + 2, replace[i]);
 			break;
-	raw_str.replace(it, it + 2, replace[i]);
-	if (c[i] == '\\')
-		++it;
+		}
+	}
+	// if (c[i] == '\\')
+	// 	++it;
+	return i < n; // Return true if character has been replaced
 }
 
 // TODO: One the one hand, this is missing unicode escaping capabilities.
@@ -256,35 +260,25 @@ void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_
 	// Unicode escaping is not currently supported. As such, any unicode escape code will translate to
 	// the 🗿 emoji.
 }
-// FIXME: simple2 = [ "Salut", "c'est"\t, "Fanta" ]
-// This parses, it shouldn't
-Value::string_type	Document::_parseString(str_const_it it, str_const_it end, std::size_t lineNum) const
-{
-	typedef	std::string::const_iterator		str_const_it;
 
-	std::string	raw_str(it, end);
-	// Loop through all backslashes, replacing them each time
-	for (std::string::iterator it = std::find(raw_str.begin(), raw_str.end(), '\\');
-		it != raw_str.end();
-		it = std::find(it, raw_str.end(), '\\'))
+Value::string_type	Document::_parseString(str_const_it src_it, str_const_it end, std::size_t lineNum) const
+{
+	std::string	newstr(++src_it, end);
+	std::string::iterator it = newstr.begin();
+	for (; it != newstr.end() && *it != '\"'; ++it)
 	{
-		if (const char *c = std::strchr("\"btnfr/\\", *(it + 1))) // If \", \b, \t, \n, \f, \r, \/, or \\.
-			_parseCompactEscapeSequence(it, raw_str, *c);
+		if (*it != '\\' || _parseCompactEscapeSequence(it, newstr, *(it + 1)) == true)
+			continue;
 		else if (*(it + 1) == 'u') // Unicode escaping
-			_parseEscapedUnicode(it, raw_str, lineNum);
+			_parseEscapedUnicode(it, newstr, lineNum);
 		else
 			throw (parse_error(std::string("Illegal escaped character (\\")+ *(it+1) + ')', lineNum));
 	}
-	
-	str_const_it last_quote = raw_str.begin() + raw_str.find_last_of('\"');
-	if (last_quote == raw_str.end())
-		throw (parse_error("Missing `\"' at the end of a string", lineNum));
-	if (_hasNonWhitespace(++last_quote, raw_str.end()))
-		throw (parse_error("Illegal character after end of string", lineNum));
-	raw_str.erase(last_quote - 1, raw_str.end());
-	raw_str.erase(0, 1);
-
-	return raw_str;
+	if (it == newstr.end())
+		throw parse_error("Missing `\"' at the end of string", lineNum);
+	else if (_hasNonWhitespace(it + 1, newstr.end()))
+		throw parse_error("Found non-space character after string", lineNum);
+	return (Value::string_type(newstr.begin(), it));
 }
 
 Document::str_const_it	Document::_nextArrayVal(str_const_it it, str_const_it end) const
@@ -316,8 +310,8 @@ Document::str_const_it	Document::_getNextArrayLine(str_const_it it, std::string&
 Value	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
 	std::string& line, std::size_t& lineNum, std::ifstream& fs) const
 {
-	_skipWhitespaces(++it, line.end());
-	if (it == line.end()) // If at the end of line but no ']' yet
+	_skipWhitespaces(++it, line.end()); // Skip first whitespaces in array
+	while (it == line.end()) // Skip empty/commented lines
 		it = _getNextArrayLine(it, line, lineNum, fs);
 	const Value::e_type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
 	assert(array_type != Value::T_UNDEF);
@@ -325,7 +319,7 @@ Value	Document::_parseArray(std::string const& key, std::string::const_iterator&
 	Value	array(key, array_type);
 	while (*it != ']')
 	{
-		while (it != line.end() && *it != ']')
+		for (; it != line.end() && *it != ']'; it = _nextArrayVal(it, line.end()))
 		{
 			const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
 			if (type != array_type)
@@ -358,7 +352,6 @@ Value	Document::_parseArray(std::string const& key, std::string::const_iterator&
 				default:
 					throw parse_error("Unexpected item type in array", lineNum);
 			}
-			it = _nextArrayVal(it, line.end());
 		}
 		if (it == line.end()) // If at the end of line but no ']' yet
 			it = _getNextArrayLine(it, line, lineNum, fs);
