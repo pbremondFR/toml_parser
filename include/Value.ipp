@@ -52,9 +52,11 @@ inline
 Value&			Value::at(std::string const& key)
 {
 	if (!isGroup())
-		throw (bad_type("Value::operator[] called with non-Group type"));
+		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
 	std::vector<Value>::iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	if (it == _hashmap.end())
+		throw std::out_of_range("Value::at: std::out_of_range");
 	return *it;
 }
 
@@ -62,9 +64,11 @@ inline
 Value const&	Value::at(std::string const& key) const
 {
 	if (!isGroup())
-		throw (bad_type("Value::operator[] called with non-Group type"));
+		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
 	std::vector<Value>::const_iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	if (it == _hashmap.end())
+		throw std::out_of_range("Value::at: std::out_of_range");
 	return *it;
 }
 
@@ -72,9 +76,9 @@ inline
 Value&			Value::at(size_type n)
 {
 	if (!isArray())
-		throw (bad_type("Value::operator[] called with non-Group type"));
+		throw (bad_type("Value::at(Value::size_type) called with non-Group type"));
 	if (n > _array.size())
-		throw std::out_of_range("Value::operator[]: std::out_of_range");
+		throw std::out_of_range("Value::at: std::out_of_range");
 	return _array[n];
 }
 
@@ -82,9 +86,9 @@ inline
 Value const&	Value::at(size_type n) const
 {
 	if (!isArray())
-		throw (bad_type("Value::operator[] called with non-Group type"));
+		throw (bad_type("Value::at(Value::size_type) called with non-Group type"));
 	if (n > _array.size())
-		throw std::out_of_range("Value::operator[]: std::out_of_range");
+		throw std::out_of_range("Value::at: std::out_of_range");
 	return _array[n];
 }
 
