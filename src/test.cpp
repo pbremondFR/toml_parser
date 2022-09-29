@@ -55,9 +55,9 @@ int	main(int argc, const char *argv[])
 	{
 		std::vector<Value>	vec;
 		vec.push_back(Value("group"));
-		vec.push_back(Value("test", 42, Value::T_INT));
-		vec.push_back(Value("test", 42, Value::T_FLOAT));
-		vec.push_back(Value("test", false, Value::T_BOOL));
+		vec.push_back(Value("test", 42,		Value::T_INT));
+		vec.push_back(Value("test", 42,		Value::T_FLOAT));
+		vec.push_back(Value("test", false,	Value::T_BOOL));
 
 		for (size_t i = 0; i < vec.size(); ++i) {
 			if (vec[i].isFundamental()) {

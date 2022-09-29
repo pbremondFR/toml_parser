@@ -153,7 +153,6 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& line, std::size_t& lineNum,
 	std::ifstream& fs)
 {
-	(void)fs;
 	// Get the key
 	std::string::const_iterator	it = src_it;
 	for (; it != line.end() && _isBareKeyChar(*it); ++it) ;
@@ -195,8 +194,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 	}
 }
 
-Value::int_type	Document::_parseInt(str_const_it it, str_const_it end,
-	std::size_t lineNum)
+Value::int_type	Document::_parseInt(str_const_it it, str_const_it end, std::size_t lineNum) const
 {
 	Value::int_type	val;
 	#ifdef __linux
@@ -208,10 +206,9 @@ Value::int_type	Document::_parseInt(str_const_it it, str_const_it end,
 	if (_hasNonWhitespace(it, end))
 		throw (parse_error("Illegal integer value", lineNum));
 	return val;
-	// _currentGroup->group_addValue(Value(key, val, Value::T_INT));
 }
 
-Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum)
+Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::size_t lineNum) const
 {
 	Value::float_type	val;
 	std::sscanf(it.base(), "%lf", &val); // Just rewrite your own func, dude
@@ -219,10 +216,9 @@ Value::float_type	Document::_parseFloat(str_const_it it, str_const_it end, std::
 	if (_hasNonWhitespace(it, end))
 		throw (parse_error("Illegal floating point value", lineNum));
 	return val;
-	// _currentGroup->group_addValue(Value(key, val, Value::T_FLOAT));
 }
 
-Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::size_t lineNum)
+Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::size_t lineNum) const
 { // FIXME, Shit code but I'm tired
 	typedef	std::string::const_iterator		str_const_it;
 	
@@ -233,7 +229,6 @@ Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::si
 		throw (parse_error("Illegal boolean value", lineNum));
 	val = (tmp == "true" ? true : false);
 	return val;
-	// _currentGroup->group_addValue(Value(key, val, Value::T_BOOL));
 }
 
 void	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str,
@@ -261,8 +256,9 @@ void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_
 	// Unicode escaping is not currently supported. As such, any unicode escape code will translate to
 	// the 🗿 emoji.
 }
-
-Value::string_type	Document::_parseString(str_const_it it, str_const_it end, std::size_t lineNum)
+// FIXME: simple2 = [ "Salut", "c'est"\t, "Fanta" ]
+// This parses, it shouldn't
+Value::string_type	Document::_parseString(str_const_it it, str_const_it end, std::size_t lineNum) const
 {
 	typedef	std::string::const_iterator		str_const_it;
 
@@ -289,11 +285,9 @@ Value::string_type	Document::_parseString(str_const_it it, str_const_it end, std
 	raw_str.erase(0, 1);
 
 	return raw_str;
-	// _currentGroup->group_addValue( Value(key, raw_str) );
 }
 
-Value::string_type::const_iterator	Document::_nextArrayVal(Value::string_type::const_iterator it,
-	Value::string_type::const_iterator end) const
+Document::str_const_it	Document::_nextArrayVal(str_const_it it, str_const_it end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
 	if (*it == ',')
@@ -302,53 +296,72 @@ Value::string_type::const_iterator	Document::_nextArrayVal(Value::string_type::c
 	return it;
 }
 
-Value::string_type::const_iterator	Document::_endofArrayIt(Value::string_type::const_iterator it,
-	Value::string_type::const_iterator end) const
+Document::str_const_it	Document::_endofArrayIt(str_const_it it, str_const_it end) const
 {
 	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
 	return it;
 }
 
+Document::str_const_it	Document::_getNextArrayLine(str_const_it it, std::string& line,
+	std::size_t& lineNum, std::ifstream& fs) const
+{
+	std::getline(fs, line);
+	lineNum++;
+	it = line.begin();
+	_skipWhitespaces(it, line.end());
+	return (it);
+}
+
 // Expects it to be pointing to a '['
 Value	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
-	std::string& line, std::size_t& lineNum, std::ifstream& fs)
+	std::string& line, std::size_t& lineNum, std::ifstream& fs) const
 {
-	(void)fs;
 	_skipWhitespaces(++it, line.end());
+	if (it == line.end()) // If at the end of line but no ']' yet
+		it = _getNextArrayLine(it, line, lineNum, fs);
 	const Value::e_type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
 	assert(array_type != Value::T_UNDEF);
 
 	Value	array(key, array_type);
-	while (it != line.end() && *it != ']')
+	while (*it != ']')
 	{
-		const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
-		if (type != array_type)
-			throw parse_error("Array contains different types", lineNum);
-		switch (array_type)
+		while (it != line.end() && *it != ']')
 		{
-			case Value::T_INT:
-				array.array_addValue( Value("", _parseInt(it, _endofArrayIt(it, line.end()), lineNum), Value::T_INT) );
-				break;
-			case Value::T_FLOAT:
-				array.array_addValue( Value("", _parseFloat(it, _endofArrayIt(it, line.end()), lineNum), Value::T_FLOAT) );
-				break;
-			case Value::T_BOOL:
-				array.array_addValue( Value("", _parseBool(it, _endofArrayIt(it, line.end()), lineNum), Value::T_BOOL) );
-				break;
-			case Value::T_STRING:
-				array.array_addValue( Value("", _parseString(it, _endofArrayIt(it, line.end()), lineNum)) );
-				break;
-			case Value::T_DATE:
-				; // TODO
-				break;
-			case Value::T_ARRAY:
-				array.array_addValue( _parseArray("", it, line, lineNum, fs) );
-				++it;
-				break;
-			default:
-				throw parse_error("Unexpected item in array", lineNum);
+			const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
+			if (type != array_type)
+				throw parse_error("Array contains different types", lineNum);
+			switch (array_type)
+			{
+				case Value::T_INT:
+					array.array_addValue( Value( "",
+							_parseInt(it, _endofArrayIt(it, line.end()), lineNum), Value::T_INT ) );
+					break;
+				case Value::T_FLOAT:
+					array.array_addValue( Value( "",
+							_parseFloat(it, _endofArrayIt(it, line.end()), lineNum), Value::T_FLOAT ) );
+					break;
+				case Value::T_BOOL:
+					array.array_addValue( Value( "",
+							_parseBool(it, _endofArrayIt(it, line.end()), lineNum), Value::T_BOOL ) );
+					break;
+				case Value::T_STRING:
+					array.array_addValue( Value( "",
+							_parseString(it, _endofArrayIt(it, line.end()), lineNum) ) );
+					break;
+				case Value::T_DATE:
+					; // TODO
+					break;
+				case Value::T_ARRAY:
+					array.array_addValue( _parseArray("", it, line, lineNum, fs) );
+					++it;
+					break;
+				default:
+					throw parse_error("Unexpected item type in array", lineNum);
+			}
+			it = _nextArrayVal(it, line.end());
 		}
-		it = _nextArrayVal(it, line.end());
+		if (it == line.end()) // If at the end of line but no ']' yet
+			it = _getNextArrayLine(it, line, lineNum, fs);
 	}
 	return (array);
 }
