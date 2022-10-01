@@ -32,6 +32,10 @@ Value::Value(string_type const& key, float_type floating, e_type type) : _type(t
 		throw (bad_type("Value: tried to construct fundamental value with non-fundamental type"));
 }
 
+// If the Group doesn't exist yet, add it where it belongs, and return a pointer to it.
+// If the Group exists, return a pointer to it.
+// If the Group doesn't exist but this key has already been declaredm return NULL.
+// See Document::_parseGroup for more details.
 inline
 Value*	Value::_getOrAddSubtable(Value const& group)
 {
@@ -54,7 +58,7 @@ Value&			Value::at(std::string const& key)
 	if (!isGroup())
 		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
 	std::vector<Value>::iterator it;
-	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	for (it = _hashmap.begin(); it != _hashmap.end() && it->_key != key; ++it) ;
 	if (it == _hashmap.end())
 		throw std::out_of_range("Value::at: std::out_of_range");
 	return *it;
@@ -66,7 +70,7 @@ Value const&	Value::at(std::string const& key) const
 	if (!isGroup())
 		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
 	std::vector<Value>::const_iterator it;
-	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	for (it = _hashmap.begin(); it != _hashmap.end() && it->_key != key; ++it) ;
 	if (it == _hashmap.end())
 		throw std::out_of_range("Value::at: std::out_of_range");
 	return *it;
@@ -76,7 +80,7 @@ inline
 Value&			Value::at(size_type n)
 {
 	if (!isArray())
-		throw (bad_type("Value::at(Value::size_type) called with non-Group type"));
+		throw (bad_type("Value::at(Value::size_type) called with non-Array type"));
 	if (n > _array.size())
 		throw std::out_of_range("Value::at: std::out_of_range");
 	return _array[n];
@@ -86,7 +90,7 @@ inline
 Value const&	Value::at(size_type n) const
 {
 	if (!isArray())
-		throw (bad_type("Value::at(Value::size_type) called with non-Group type"));
+		throw (bad_type("Value::at(Value::size_type) called with non-Array type"));
 	if (n > _array.size())
 		throw std::out_of_range("Value::at: std::out_of_range");
 	return _array[n];
@@ -96,9 +100,9 @@ inline
 Value	Value::at_or(std::string const& key, Value val) const noexcept
 {
 	std::vector<Value>::const_iterator it;
-	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
+	for (it = _hashmap.begin(); it != _hashmap.end() && it->_key != key; ++it) ;
 	if (it == _hashmap.end())
-		return val;
+		return val; // No need to check for group before, _hashmap is empty
 	return *it;
 }
 
@@ -237,13 +241,15 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 			out << ']';
 			break;
 		}
-		default:
-			out << "TODO";
-			break;
+		case Value::T_DATE:
+			out << "TODO: dates";
+		case Value::T_UNDEF:
+			out << "Undefined";
 	}
 	return out;
 }
 
+// Using switch case to get compiler warning against forgotten enum values
 inline
 const char* typeToChar(TOML::Value::e_type type)
 {
@@ -261,9 +267,9 @@ const char* typeToChar(TOML::Value::e_type type)
 			return ("Group");
 		case TOML::Value::T_ARRAY:
 			return ("Array");
+		case TOML::Value::T_DATE:
+			return ("Date");
 		case TOML::Value::T_UNDEF:
 			return ("Undefined");
-		default:
-			return ("unknown type");
 	}
 }

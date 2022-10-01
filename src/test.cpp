@@ -124,8 +124,8 @@ int	main(int argc, const char *argv[])
 		Document	doc(argv[1]);
 		doc.parse();
 
-		std::cout << doc["test"]["salut"] << std::endl;
-		std::cout << doc["test"]["coucou"] << std::endl;
+		std::cout << '[' << doc["test"]["salut"] << ']' << std::endl;
+		std::cout << '[' << doc["test"]["coucou"] << ']' << std::endl;
 	}
 	newtest("Array");
 	{

@@ -142,7 +142,7 @@ class Value
 		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Value::Str()"));	}
 		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw (bad_type("Value::Group()"));	}
 
-		inline string_type&			key()		noexcept { return _key; }
+		// inline string_type&			key()		noexcept { return _key; }
 		inline string_type const&	key() const	noexcept { return _key; }
 
 		Value&			at(std::string const& key);

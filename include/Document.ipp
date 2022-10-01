@@ -106,13 +106,15 @@ bool	Document::parse()
 	{
 		std::string::const_iterator	it = line.begin();
 		_skipWhitespaces(it, line.end());
-		if (it == line.end() || *it == '#') { // ignore empty lines
+		if (it == line.end()) // ignore empty lines
 			continue;
-		}
 		
 		else if (*it == '[')
 		{
-			_parseGroup(++it, line, lineNum);
+			if (*(it + 1) == '[') // Group array
+				;
+			else
+				_parseGroup(++it, line, lineNum);
 		}
 		// Insert quoted keys, groups tables, etc, here
 		else
@@ -199,14 +201,11 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 		case Value::T_BOOL:
 			_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), Value::T_BOOL) );
 			break;
-		case Value::T_DATE:
-			std::cout << "date case" << std::endl;
-			break;
 		case Value::T_ARRAY:
-			// std::cout << "Uncomment me you dipshit" << std::endl;
 			_currentGroup->group_addValue( _parseArray(key, it, line, lineNum, fs) );
 			break;
-		// case Value::T_UNDEF:
+		case Value::T_DATE:
+			throw parse_error("Unsupported Date type");
 		default:
 			throw (parse_error("Illegal or missing value", lineNum));
 	}
@@ -270,16 +269,32 @@ bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::strin
 	return i < n; // Return true if character has been replaced
 }
 
-// TODO: One the one hand, this is missing unicode escaping capabilities.
-// On the other hand, this is very funny. And you can just use your emoji keyboard.
 inline
 void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const
 {
 	if (!isxdigit(*(it + 2)) || !isxdigit(*(it + 3)) || !isxdigit(*(it + 4)) || !isxdigit(*(it + 5)))
 		throw (parse_error("Illegal unicode escape sequence", lineNum));
-	raw_str.replace(it, it + 6, "🗿");
-	// Unicode escaping is not currently supported. As such, any unicode escape code will translate to
-	// the 🗿 emoji.
+
+	const long code = std::strtol(std::string(it + 2, it + 6).c_str(), NULL, 16);
+	if (code <= 0x7F)
+	{
+		raw_str.replace(it, it + 6, 1, static_cast<char>(code));
+	}
+	else if (code >= 0x0080 && code <= 0x07FF) // Two point unicode
+	{
+		char unicode[3] = { 0b11000000, 0b10000000, 0x00 };
+		unicode[1] |= (code)		& 0b111111;
+		unicode[0] |= (code >> 6)	& 0b111111;
+		raw_str.replace(it, it + 6, static_cast<const char *>(unicode));
+	}
+	else // Three point unicode
+	{
+		char unicode[4] = { 0b11100000, 0b10000000, 0b10000000, 0x00 };
+		unicode[2] |= (code)		& 0b111111;
+		unicode[1] |= (code >> 6)	& 0b111111;
+		unicode[0] |= (code >> 12)	& 0b111111;
+		raw_str.replace(it, it + 6, static_cast<const char *>(unicode));
+	}
 }
 
 inline
