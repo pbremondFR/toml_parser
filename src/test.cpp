@@ -6,6 +6,8 @@
 
 #include "../include/Document.hpp"
 
+#include "../include/Array.hpp"
+
 #ifndef P_TYPE
 # define P_TYPE(x) (TOML::typeToChar(x))
 #endif
@@ -53,9 +55,9 @@ int	main(int argc, const char *argv[])
 	{
 		std::vector<Value>	vec;
 		vec.push_back(Value("group"));
-		vec.push_back(Value("test", 42,		Value::T_INT));
-		vec.push_back(Value("test", 42,		Value::T_FLOAT));
-		vec.push_back(Value("test", false,	Value::T_BOOL));
+		vec.push_back(Value("test", 42,		TOML::T_INT));
+		vec.push_back(Value("test", 42,		TOML::T_FLOAT));
+		vec.push_back(Value("test", false,	TOML::T_BOOL));
 
 		for (size_t i = 0; i < vec.size(); ++i) {
 			if (vec[i].isFundamental()) {
@@ -226,8 +228,14 @@ int	main(int argc, const char *argv[])
 		std::cout << doc["test"].at_or("coucou", Value("", "default")) << std::endl;
 		std::cout << doc["test"].at_or("hello", Value("", "default")) << std::endl;
 
-		std::cout << doc["test"]["a"]["simple1"].at_or(0, Value("", 42, TOML::Value::T_INT)) << std::endl;
-		std::cout << doc["test"]["a"]["simple1"].at_or(5, Value("", 42, TOML::Value::T_INT)) << std::endl;
+		std::cout << doc["test"]["a"]["simple1"].at_or(0, Value("", 42, TOML::T_INT)) << std::endl;
+		std::cout << doc["test"]["a"]["simple1"].at_or(5, Value("", 42, TOML::T_INT)) << std::endl;
+	}
+	newtest();
+	{
+		TOML::__detail::Array<Value>	test(TOML::T_INT);
+
+		std::cout << test.size() << std::endl;
 	}
 	return 0;
 }

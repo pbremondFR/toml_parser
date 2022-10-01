@@ -19,24 +19,24 @@
 // ============================================================================================== //
 
 inline
-Value::e_type
+TOML::Type
 	Document::_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end)
 {
 	if (*it == '\"')
-		return Value::T_STRING;
+		return TOML::T_STRING;
 	else if (*it == 't' || *it == 'f')
-		return Value::T_BOOL;
+		return TOML::T_BOOL;
 	else if (*it == '[')
-		return Value::T_ARRAY;
+		return TOML::T_ARRAY;
 	else if (isdigit(*it) || *it == '-')
 	{
 		if (std::find(it, end, '.') != end)
-			return Value::T_FLOAT;
+			return TOML::T_FLOAT;
 		else
-			return Value::T_INT;
+			return TOML::T_INT;
 	}
 	else
-		return Value::T_UNDEF;
+		return TOML::T_UNDEF;
 }
 
 inline
@@ -99,7 +99,7 @@ bool	Document::parse()
 	
 	std::ifstream	fs(_path.c_str());
 	if (!fs.is_open())
-		return false; // TODO: Exception handling
+		throw std::runtime_error(strerror(errno));
 
 	std::size_t	lineNum = 1;
 	for (std::string line; std::getline(fs, line); ++lineNum)
@@ -134,6 +134,8 @@ void	Document::_parseGroup(std::string::const_iterator src_it, std::string const
 	str_const_it	it = std::find(src_it, line.end(), ']');
 	if (it == line.end())
 		throw(parse_error("Invalid group definition (missing `]')", lineNum));
+	if (_hasNonWhitespace(it + 1, line.end()))
+		throw parse_error("Invalid group definition: non-whitespace character after closing `]'", lineNum);
 	std::string	key(src_it, it);
 	str_const_it keyIt;
 	for (keyIt = key.begin(); keyIt != key.end(); ++keyIt)
@@ -177,7 +179,7 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 	std::string::const_iterator	it = src_it;
 	for (; it != line.end() && _isBareKeyChar(*it); ++it) ;
 	if (!_isSpace(*it) && *it != '#' && *it != '=')
-		throw (parse_error("Illegal key character at line ", lineNum));
+		throw (parse_error("Illegal key character ", lineNum));
 	std::string	key(src_it, it);
 
 	// Skip over the = sign but make sure it's there
@@ -189,22 +191,22 @@ void	Document::_parseKeyValue(std::string::const_iterator src_it, std::string& l
 	// Get and parse the value
 	switch (_guessValueType(it, line.end()))
 	{
-		case Value::T_STRING:
+		case TOML::T_STRING:
 			_currentGroup->group_addValue( Value(key, _parseString(it, line.end(), lineNum)) );
 			break;
-		case Value::T_INT:
-			_currentGroup->group_addValue( Value(key, _parseInt(it, line.end(), lineNum), Value::T_INT) );
+		case TOML::T_INT:
+			_currentGroup->group_addValue( Value(key, _parseInt(it, line.end(), lineNum), TOML::T_INT) );
 			break;
-		case Value::T_FLOAT:
-			_currentGroup->group_addValue( Value(key, _parseFloat(it, line.end(), lineNum), Value::T_FLOAT) );
+		case TOML::T_FLOAT:
+			_currentGroup->group_addValue( Value(key, _parseFloat(it, line.end(), lineNum), TOML::T_FLOAT) );
 			break;
-		case Value::T_BOOL:
-			_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), Value::T_BOOL) );
+		case TOML::T_BOOL:
+			_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), TOML::T_BOOL) );
 			break;
-		case Value::T_ARRAY:
+		case TOML::T_ARRAY:
 			_currentGroup->group_addValue( _parseArray(key, it, line, lineNum, fs) );
 			break;
-		case Value::T_DATE:
+		case TOML::T_DATE:
 			throw parse_error("Unsupported Date type");
 		default:
 			throw (parse_error("Illegal or missing value", lineNum));
@@ -251,6 +253,7 @@ Value::bool_type	Document::_parseBool(str_const_it it, str_const_it end, std::si
 	return val;
 }
 
+// Returns true if character was successfully parsed, false otherwise
 inline
 bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::string& str,
 	char escaped) const
@@ -266,7 +269,7 @@ bool	Document::_parseCompactEscapeSequence(std::string::iterator& it, std::strin
 			break;
 		}
 	}
-	return i < n; // Return true if character has been replaced
+	return i < n;
 }
 
 inline
@@ -276,24 +279,25 @@ void	Document::_parseEscapedUnicode(std::string::iterator& it, std::string& raw_
 		throw (parse_error("Illegal unicode escape sequence", lineNum));
 
 	const long code = std::strtol(std::string(it + 2, it + 6).c_str(), NULL, 16);
+	assert(code >= 0);
 	if (code <= 0x7F)
 	{
 		raw_str.replace(it, it + 6, 1, static_cast<char>(code));
 	}
 	else if (code >= 0x0080 && code <= 0x07FF) // Two point unicode
 	{
-		char unicode[3] = { 0b11000000, 0b10000000, 0x00 };
+		unsigned char unicode[3] = { 0b11000000, 0b10000000, 0x00 };
 		unicode[1] |= (code)		& 0b111111;
 		unicode[0] |= (code >> 6)	& 0b111111;
-		raw_str.replace(it, it + 6, static_cast<const char *>(unicode));
+		raw_str.replace(it, it + 6, reinterpret_cast<const char *>(unicode));
 	}
 	else // Three point unicode
 	{
-		char unicode[4] = { 0b11100000, 0b10000000, 0b10000000, 0x00 };
+		unsigned char unicode[4] = { 0b11100000, 0b10000000, 0b10000000, 0x00 };
 		unicode[2] |= (code)		& 0b111111;
 		unicode[1] |= (code >> 6)	& 0b111111;
 		unicode[0] |= (code >> 12)	& 0b111111;
-		raw_str.replace(it, it + 6, static_cast<const char *>(unicode));
+		raw_str.replace(it, it + 6, reinterpret_cast<const char *>(unicode));
 	}
 }
 
@@ -346,7 +350,7 @@ Document::str_const_it	Document::_getNextArrayLine(str_const_it it, std::string&
 	return (it);
 }
 
-// Expects it to be pointing to a '['
+// Expects `it' to be pointing to a '['
 inline
 Value	Document::_parseArray(std::string const& key, std::string::const_iterator& it,
 	std::string& line, std::size_t& lineNum, std::ifstream& fs) const
@@ -354,40 +358,40 @@ Value	Document::_parseArray(std::string const& key, std::string::const_iterator&
 	_skipWhitespaces(++it, line.end()); // Skip first whitespaces in array
 	while (it == line.end()) // Skip empty/commented lines
 		it = _getNextArrayLine(it, line, lineNum, fs);
-	const Value::e_type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
-	assert(array_type != Value::T_UNDEF);
+	const TOML::Type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
+	assert(array_type != TOML::T_UNDEF);
 
 	Value	array(key, array_type);
 	while (*it != ']')
 	{
 		for (; it != line.end() && *it != ']'; it = _nextArrayVal(it, line.end()))
 		{
-			const Value::e_type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
+			const TOML::Type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
 			if (type != array_type)
 				throw parse_error("Array contains different types", lineNum);
 			switch (array_type)
 			{
-				case Value::T_INT:
-					array.array_addValue( Value( "",
-							_parseInt(it, _endofArrayIt(it, line.end()), lineNum), Value::T_INT ) );
+				case TOML::T_INT:
+					array.Array().push_back( Value( "",
+							_parseInt(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_INT ) );
 					break;
-				case Value::T_FLOAT:
-					array.array_addValue( Value( "",
-							_parseFloat(it, _endofArrayIt(it, line.end()), lineNum), Value::T_FLOAT ) );
+				case TOML::T_FLOAT:
+					array.Array().push_back( Value( "",
+							_parseFloat(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_FLOAT ) );
 					break;
-				case Value::T_BOOL:
-					array.array_addValue( Value( "",
-							_parseBool(it, _endofArrayIt(it, line.end()), lineNum), Value::T_BOOL ) );
+				case TOML::T_BOOL:
+					array.Array().push_back( Value( "",
+							_parseBool(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_BOOL ) );
 					break;
-				case Value::T_STRING:
-					array.array_addValue( Value( "",
+				case TOML::T_STRING:
+					array.Array().push_back( Value( "",
 							_parseString(it, _endofArrayIt(it, line.end()), lineNum) ) );
 					break;
-				case Value::T_DATE:
+				case TOML::T_DATE:
 					; // TODO
 					break;
-				case Value::T_ARRAY:
-					array.array_addValue( _parseArray("", it, line, lineNum, fs) );
+				case TOML::T_ARRAY:
+					array.Array().push_back( _parseArray("", it, line, lineNum, fs) );
 					++it;
 					break;
 				default:
@@ -398,4 +402,25 @@ Value	Document::_parseArray(std::string const& key, std::string::const_iterator&
 			it = _getNextArrayLine(it, line, lineNum, fs);
 	}
 	return (array);
+}
+
+// Expects `it' to be pointing to the first character after the two `['
+inline
+Value	Document::_parseGroupArray(str_const_it it, str_const_it end,
+	Value::size_type lineNum) const
+{
+	// Get and check the key
+	str_const_it key_end = it;
+	while (key_end != end && *key_end != ']')
+		++key_end;
+	if (*(key_end + 1) != ']')
+		throw parse_error(std::string("Expected `]' at the end of Group Array, found `") + *(key_end+1) + '\'', lineNum);
+	if (_hasNonWhitespace(key_end + 2, end))
+		throw parse_error("Found non-whitespace characters after Group Array declaration", lineNum);
+	std::string key(it, key_end);
+	for (it = key.begin(); it != key.end(); ++it)
+		if (!_isBareKeyChar(*it) && *it != '.')
+			throw parse_error("Illegal key character", lineNum);
+	
+	return Value("");
 }

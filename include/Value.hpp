@@ -19,6 +19,8 @@
 # include <typeinfo>
 # include <cassert>
 # include "type_traits.hpp"
+# include "Array.hpp"
+# include "exceptions.hpp"
 
 # ifndef P_TYPE
 #  define P_TYPE(x) (typeToChar(x))
@@ -30,18 +32,6 @@
 
 namespace TOML
 {
-
-class Document;
-
-class bad_type : public std::exception
-{
-	private:
-		const char	*_msg;
-
-	public:
-		bad_type(const char *msg) : _msg(msg) {}
-		virtual const char	*what() const throw() { return (_msg); }
-};
 
 // TODO: comparison operators ? Only compare keys ?
 class Value
@@ -65,39 +55,25 @@ class Value
 		typedef		double				float_type;
 		typedef		bool				bool_type;
 		typedef		Value				group_type;
-		enum e_type
-		{
-			T_INT,
-			T_FLOAT,
-			T_BOOL,
-			T_STRING,
-			T_GROUP,
-			T_DATE,
-			T_ARRAY,
-			T_UNDEF
-		};
+		typedef		__detail::Array<Value>		array_type;
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
-		template <class T>
-		friend class DocumentIterator; // TODO: Remove me when everything is done, if possible
-		
-		Value&	operator=(Value const&) { assert(false); } // Disables the operator= assignment
 
+		TOML::Type	_type; // Yes, it's not const anymore. DON'T TOUCH IT.
 		// Possible types that the value can be
-		const e_type	_type;
 		union
 		{
 			int_type	_int;
 			double		_float;
 			bool		_bool;
 		};
-		string_type		_str; // I want C++11 :'(
-		std::vector<Value>	_array; // TODO: Merge me with _hashmap once you've got everything settled
-		const e_type		_array_type;
-		std::vector<Value>	_hashmap; // lol
+		string_type			_str; // Can't be in union. I want C++11 :'(
+		array_type			_array; // TODO: Merge me with _hashmap once you've got everything settled
+									// Or don't, if you prefer to have something easily portable
 
-		string_type		_key;
+		std::vector<Value>	_hashmap; // lol
+		string_type			_key;
 
 		bool	_undefinedGroup; // If the group has only been put there automatically,
 								 // i.e if it was a subgroup in a [a.b.c] declaration
@@ -108,15 +84,15 @@ class Value
 
 	public:
 		// Int/String/Bool constructor
-		explicit Value(string_type const& key, float_type floating, e_type type);
+		explicit Value(string_type const& key, float_type floating, Type type);
 		// String constructor
-		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _array_type(T_UNDEF), _key(key) {}
+		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
 		// Array constructor
-		explicit Value(string_type const& key, e_type array_type) : _type(T_ARRAY), _array_type(array_type), _key(key) {}
+		explicit Value(string_type const& key, Type array_type) : _type(T_ARRAY), _array(array_type), _key(key) {}
 		// Group constructor
-		explicit Value(string_type const& key) : _type(T_GROUP), _array_type(T_UNDEF), _key(key), _undefinedGroup(true) { }
+		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) { }
 
-		inline e_type		type() const noexcept { return _type; }
+		inline Type		type() const noexcept { return _type; }
 
 		inline bool_type	isInt()		const noexcept { return (_type == T_INT);		}
 		inline bool_type	isFloat()	const noexcept { return (_type == T_FLOAT);		}
@@ -129,20 +105,20 @@ class Value
 
 		inline size_type	groupSize()	const { if (isGroup())	return _hashmap.size();	throw (bad_type("Value::groupSize()"));	}
 
-		// TODO: Add Array()
-		inline int_type&			Int()	{ if (isInt())	 return _int;	throw (bad_type("Value::Int()"));	}
-		inline float_type&			Float()	{ if (isFloat()) return _float;	throw (bad_type("Value::Float()"));	}
-		inline bool_type&			Bool()	{ if (isBool())	 return _bool;	throw (bad_type("Value::Bool()"));	}
-		inline string_type&			Str()	{ if (isStr())	 return _str;	throw (bad_type("Value::Str()"));	}
-		inline group_type&			Group()	{ if (isGroup()) return *this;	throw (bad_type("Value::Group()"));	}
+		inline int_type&			Int()	{ if (isInt())		return _int;	throw bad_type("Value::Int()");		}
+		inline float_type&			Float()	{ if (isFloat())	return _float;	throw bad_type("Value::Float()");	}
+		inline bool_type&			Bool()	{ if (isBool())		return _bool;	throw bad_type("Value::Bool()");	}
+		inline string_type&			Str()	{ if (isStr())		return _str;	throw bad_type("Value::Str()");		}
+		inline group_type&			Group()	{ if (isGroup())	return *this;	throw bad_type("Value::Group()");	}
+		inline array_type&			Array()	{ if (isArray())	return _array;	throw bad_type("Value::Array()"); 	}
 
-		inline int_type const&		Int()	const { if (isInt())	return _int;	throw (bad_type("Value::Int()"));	}
-		inline float_type const&	Float()	const { if (isFloat())	return _float;	throw (bad_type("Value::Float()"));	}
-		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw (bad_type("Value::Bool()"));	}
-		inline string_type const&	Str()	const { if (isStr())	return _str;	throw (bad_type("Value::Str()"));	}
-		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw (bad_type("Value::Group()"));	}
+		inline int_type const&		Int()	const { if (isInt())	return _int;	throw bad_type("Value::Int()");		}
+		inline float_type const&	Float()	const { if (isFloat())	return _float;	throw bad_type("Value::Float()");	}
+		inline bool_type const&		Bool()	const { if (isBool())	return _bool;	throw bad_type("Value::Bool()");	}
+		inline string_type const&	Str()	const { if (isStr())	return _str;	throw bad_type("Value::Str()");		}
+		inline group_type const&	Group()	const { if (isGroup())	return *this;	throw bad_type("Value::Group()");	}
+		inline array_type const&	Array()	const { if (isArray())	return _array;	throw bad_type("Value::Array()"); 	}
 
-		// inline string_type&			key()		noexcept { return _key; }
 		inline string_type const&	key() const	noexcept { return _key; }
 
 		Value&			at(std::string const& key);
@@ -164,7 +140,6 @@ class Value
 		bool_type	set(group_type const& group); // String assignment cannot guarantee a noexcept
 
 		Value	*group_addValue(Value const& val);
-		void	array_addValue(Value const& val);
 
 		array_iterator			begin()			{ return _array.begin(); }
 		array_const_iterator	begin() const	{ return _array.begin(); }

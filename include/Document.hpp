@@ -20,10 +20,11 @@
 #include <cstdlib>
 #include <sstream>
 #include <iterator>
-#include <stack>
+#include <errno.h>
+#include <cstring> // strerror
 
+#include "exceptions.hpp"
 #include "iterator.hpp"
-
 #include "Value.hpp"
 
 #include "ansi_color.h"
@@ -34,24 +35,6 @@
 
 namespace TOML
 {
-
-class parse_error : public std::exception
-{
-	private:
-		std::string			_msg;
-	public:
-		parse_error(std::string const& what, std::size_t line = 0)
-		{
-			std::stringstream ss;
-			ss << what;
-			if (line != 0)
-				ss << " at line " << line;
-			_msg = ss.str();
-		}
-		parse_error(parse_error const&) {}
-		virtual const char	*what() const throw() { return _msg.c_str(); }
-		virtual ~parse_error() throw() {}
-};
 
 class Document
 {
@@ -87,7 +70,7 @@ class Document
 		{
 			return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_');
 		}
-		static Value::e_type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
+		static TOML::Type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
 		// Returns whether or not iterator range has got non-whitespace characters. Comments are ignored.
 		static inline bool	_hasNonWhitespace(std::string::const_iterator first, std::string::const_iterator const& last)
 		{
@@ -98,20 +81,26 @@ class Document
 		void	_parseGroup(str_const_it it, std::string const& line, std::size_t lineNum);
 		void	_parseKeyValue(str_const_it it, std::string& line, std::size_t& lineNum, std::ifstream& fs);
 
+		// Simple types parsing
 		Value::int_type		_parseInt	(str_const_it it, str_const_it end, std::size_t lineNum) const;
 		Value::float_type	_parseFloat	(str_const_it it, str_const_it end, std::size_t lineNum) const;
 		Value::bool_type	_parseBool	(str_const_it it, str_const_it end, std::size_t lineNum) const;
 
+		// String parsing
 		bool	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
 		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
 		Value::string_type	_parseString(str_const_it it, str_const_it end, std::size_t lineNum) const;
 
+		// Array parsing
 		str_const_it	_nextArrayVal(str_const_it it, str_const_it end) const;
 		str_const_it	_endofArrayIt(str_const_it it, str_const_it end) const;
 		str_const_it	_getNextArrayLine(str_const_it it, std::string& line, std::size_t& lineNum,
 							std::ifstream& fs) const;
 		Value	_parseArray(std::string const& key, str_const_it& it, std::string& line,
 					std::size_t& lineNum, std::ifstream& fs) const;
+		
+		// Group array parsing
+		Value	_parseGroupArray(str_const_it it, str_const_it end, std::size_t lineNum) const;
 	
 	public:
 		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root

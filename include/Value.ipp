@@ -19,8 +19,7 @@
 // ============================================================================================== //
 
 inline
-Value::Value(string_type const& key, float_type floating, e_type type) : _type(type), _array_type(T_UNDEF),
-	_key(key)
+Value::Value(string_type const& key, float_type floating, TOML::Type type) : _type(type), _key(key)
 {
 	if (_type == T_INT)
 		_int = static_cast<int_type>(floating);
@@ -196,13 +195,13 @@ Value*	Value::group_addValue(Value const& val) // TESTME
 	return (_hashmap.end() - 1).operator->();
 }
 
-inline
-void	Value::array_addValue(Value const& value)
-{
-	if (!isArray())
-		throw bad_type("Called array_addValue() on a TOML::Value that's not an array");
-	_array.push_back(value);
-}
+// inline
+// void	Value::array_addValue(Value const& value)
+// {
+// 	if (!isArray())
+// 		throw bad_type("Called array_addValue() on a TOML::Value that's not an array");
+// 	_array.push_back(value);
+// }
 
 // ============================================================================================== //
 // ---------------------------------------- OUT OF CLASS ---------------------------------------- //
@@ -213,19 +212,19 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 {
 	switch (val.type())
 	{
-		case Value::T_INT:
+		case TOML::T_INT:
 			out << val._int;
 			break;
-		case Value::T_FLOAT:
+		case TOML::T_FLOAT:
 			out << val._float;
 			break;
-		case Value::T_BOOL:
+		case TOML::T_BOOL:
 			out << (val._bool == true ? "true" : "false");
 			break;
-		case Value::T_STRING:
+		case TOML::T_STRING:
 			out << val._str;
 			break;
-		case Value::T_GROUP:
+		case TOML::T_GROUP:
 		{
 			out << "Group " << val._key << "("<<val._hashmap.size()<<")" << "->{ ";
 			for (std::vector<Value>::const_iterator it = val._hashmap.begin(); it != val._hashmap.end(); ++it)
@@ -233,7 +232,7 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 			out << "}";
 			break;
 		}
-		case Value::T_ARRAY:
+		case TOML::T_ARRAY:
 		{
 			out << '[';
 			for (std::vector<Value>::const_iterator it = val._array.begin(); it != val._array.end(); ++it)
@@ -241,9 +240,9 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 			out << ']';
 			break;
 		}
-		case Value::T_DATE:
+		case TOML::T_DATE:
 			out << "TODO: dates";
-		case Value::T_UNDEF:
+		case TOML::T_UNDEF:
 			out << "Undefined";
 	}
 	return out;
@@ -251,25 +250,25 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 
 // Using switch case to get compiler warning against forgotten enum values
 inline
-const char* typeToChar(TOML::Value::e_type type)
+const char* typeToChar(TOML::Type type)
 {
 	switch (type)
 	{
-		case TOML::Value::T_INT:
+		case TOML::T_INT:
 			return ("Int");
-		case TOML::Value::T_FLOAT:
+		case TOML::T_FLOAT:
 			return ("Float");
-		case TOML::Value::T_BOOL:
+		case TOML::T_BOOL:
 			return ("Bool");
-		case TOML::Value::T_STRING:
+		case TOML::T_STRING:
 			return ("String");
-		case TOML::Value::T_GROUP:
+		case TOML::T_GROUP:
 			return ("Group");
-		case TOML::Value::T_ARRAY:
+		case TOML::T_ARRAY:
 			return ("Array");
-		case TOML::Value::T_DATE:
+		case TOML::T_DATE:
 			return ("Date");
-		case TOML::Value::T_UNDEF:
+		case TOML::T_UNDEF:
 			return ("Undefined");
 	}
 }
