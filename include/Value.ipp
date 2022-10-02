@@ -14,6 +14,32 @@
 
 #include "Value.hpp"
 
+// Using switch case to get compiler warning against forgotten enum values
+inline
+const char* typeToChar(TOML::Type type)
+{
+	switch (type)
+	{
+		case TOML::T_INT:
+			return ("Int");
+		case TOML::T_FLOAT:
+			return ("Float");
+		case TOML::T_BOOL:
+			return ("Bool");
+		case TOML::T_STRING:
+			return ("String");
+		case TOML::T_GROUP:
+			return ("Group");
+		case TOML::T_ARRAY:
+			return ("Array");
+		case TOML::T_DATE:
+			return ("Date");
+		case TOML::T_UNDEF:
+			return ("Undefined");
+	}
+}
+
+
 // ============================================================================================== //
 // --------------------------------------- PUBLIC METHODS --------------------------------------- //
 // ============================================================================================== //
@@ -44,6 +70,8 @@ Value*	Value::_getOrAddSubtable(Value const& group)
 	{
 		if (group._key == it->_key && it->isGroup()) // Found subgroup
 			return (it.operator->());
+		else if (group._key == it->_key && it->isArray() && it->Array().type() == T_GROUP)
+			return &(it->Array().back());
 		else if (group._key == it->_key) // Subgroup key conflicts with other key
 			return NULL;
 	}
@@ -52,7 +80,15 @@ Value*	Value::_getOrAddSubtable(Value const& group)
 }
 
 inline
-Value&			Value::at(std::string const& key)
+bool	Value::has(string_type const& key) const
+{
+	std::vector<Value>::const_iterator it;
+	for (it = _hashmap.begin(); it != _hashmap.end() && it->_key != key; ++it) ;
+	return it != _hashmap.end();
+}
+
+inline
+Value&			Value::at(string_type const& key)
 {
 	if (!isGroup())
 		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
@@ -64,7 +100,7 @@ Value&			Value::at(std::string const& key)
 }
 
 inline
-Value const&	Value::at(std::string const& key) const
+Value const&	Value::at(string_type const& key) const
 {
 	if (!isGroup())
 		throw (bad_type("Value::at(Value::string_type const&) called with non-Group type"));
@@ -96,7 +132,7 @@ Value const&	Value::at(size_type n) const
 }
 
 inline
-Value	Value::at_or(std::string const& key, Value val) const noexcept
+Value	Value::at_or(string_type const& key, Value val) const noexcept
 {
 	std::vector<Value>::const_iterator it;
 	for (it = _hashmap.begin(); it != _hashmap.end() && it->_key != key; ++it) ;
@@ -114,7 +150,7 @@ Value	Value::at_or(size_type n, Value val) const noexcept
 }
 
 inline
-Value&			Value::operator[](std::string const& key) noexcept
+Value&			Value::operator[](string_type const& key) noexcept
 {
 	std::vector<Value>::iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
@@ -122,7 +158,7 @@ Value&			Value::operator[](std::string const& key) noexcept
 }
 
 inline
-Value const&	Value::operator[](std::string const& key) const noexcept
+Value const&	Value::operator[](string_type const& key) const noexcept
 {
 	std::vector<Value>::const_iterator it;
 	for (it = _hashmap.begin(); it->_key != key && it != _hashmap.end(); ++it) ;
@@ -178,9 +214,9 @@ Value::bool_type	Value::set(group_type const& group)
 inline
 Value*	Value::group_addValue(Value const& val) // TESTME
 {
-	if (!this->isGroup()) {
-		throw (bad_type("Called group_addValue() on a TOML::Value that's not a group"));
-	}
+	if (!this->isGroup())
+		throw bad_type( (string_type("Called group_addValue() on a TOML::Value with type ")
+				+ typeToChar(this->type())).c_str() );
 	for (std::vector<Value>::iterator it = _hashmap.begin(); it != _hashmap.end(); ++it)
 	{
 		if (it->_key == val.key())
@@ -193,15 +229,20 @@ Value*	Value::group_addValue(Value const& val) // TESTME
 	}
 	_hashmap.push_back(val);
 	return (_hashmap.end() - 1).operator->();
+	// return &_hashmap.back();
 }
 
-// inline
-// void	Value::array_addValue(Value const& value)
-// {
-// 	if (!isArray())
-// 		throw bad_type("Called array_addValue() on a TOML::Value that's not an array");
-// 	_array.push_back(value);
-// }
+inline
+Value*	Value::groupArray_addValue(Value const& val)
+{
+	if (!this->isArray())
+		throw bad_type( (string_type("Called groupArray_addValue() on a TOML::Value with type ")
+				+ typeToChar(this->type())).c_str() );
+	if (!val.isGroup())
+		throw bad_type( ( string_type("Tried to add a TOML::") + typeToChar(this->type()) + " to a group array" ).c_str() );
+	this->Array().push_back(val);
+	return &this->Array().back();
+}
 
 // ============================================================================================== //
 // ---------------------------------------- OUT OF CLASS ---------------------------------------- //
@@ -235,7 +276,7 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 		case TOML::T_ARRAY:
 		{
 			out << '[';
-			for (std::vector<Value>::const_iterator it = val._array.begin(); it != val._array.end(); ++it)
+			for (Value::array_type::const_iterator it = val._array.begin(); it != val._array.end(); ++it)
 				out << *it << (it == val._array.end() - 1 ? "" : ", ");
 			out << ']';
 			break;
@@ -246,29 +287,4 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 			out << "Undefined";
 	}
 	return out;
-}
-
-// Using switch case to get compiler warning against forgotten enum values
-inline
-const char* typeToChar(TOML::Type type)
-{
-	switch (type)
-	{
-		case TOML::T_INT:
-			return ("Int");
-		case TOML::T_FLOAT:
-			return ("Float");
-		case TOML::T_BOOL:
-			return ("Bool");
-		case TOML::T_STRING:
-			return ("String");
-		case TOML::T_GROUP:
-			return ("Group");
-		case TOML::T_ARRAY:
-			return ("Array");
-		case TOML::T_DATE:
-			return ("Date");
-		case TOML::T_UNDEF:
-			return ("Undefined");
-	}
 }

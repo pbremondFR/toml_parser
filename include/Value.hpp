@@ -22,6 +22,8 @@
 # include "Array.hpp"
 # include "exceptions.hpp"
 
+#include "ansi_color.h"
+
 # ifndef P_TYPE
 #  define P_TYPE(x) (typeToChar(x))
 # endif
@@ -45,17 +47,12 @@ class Value
 		typedef 	Value*				pointer;
 		typedef 	Value const*		const_pointer;
 
-		typedef		std::vector<Value>::iterator				array_iterator;
-		typedef		std::vector<Value>::const_iterator			array_const_iterator;
-		typedef		std::vector<Value>::reverse_iterator		array_reverse_iterator;
-		typedef		std::vector<Value>::const_reverse_iterator	array_const_reverse_iterator;
-
-		typedef 	std::string			string_type;
-		typedef		__int64_t			int_type;
-		typedef		double				float_type;
-		typedef		bool				bool_type;
-		typedef		Value				group_type;
-		typedef		__detail::Array<Value>		array_type;
+		typedef		__int64_t				int_type;
+		typedef		double					float_type;
+		typedef		bool					bool_type;
+		typedef 	std::string				string_type;
+		typedef		Value					group_type;
+		typedef		__detail::Array<Value>	array_type;
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
@@ -88,7 +85,7 @@ class Value
 		// String constructor
 		explicit Value(string_type const& key, string_type const& string) : _type(T_STRING), _str(string), _key(key) {}
 		// Array constructor
-		explicit Value(string_type const& key, Type array_type) : _type(T_ARRAY), _array(array_type), _key(key) {}
+		explicit Value(string_type const& key, TOML::Type array_type) : _type(T_ARRAY), _array(array_type), _key(key) {}
 		// Group constructor
 		explicit Value(string_type const& key) : _type(T_GROUP), _key(key), _undefinedGroup(true) { }
 
@@ -121,15 +118,17 @@ class Value
 
 		inline string_type const&	key() const	noexcept { return _key; }
 
-		Value&			at(std::string const& key);
-		Value const&	at(std::string const& key) const;
+		bool	has(string_type const& key) const;
+
+		Value&			at(string_type const& key);
+		Value const&	at(string_type const& key) const;
 		Value&			at(size_type n);
 		Value const&	at(size_type n) const;
-		Value			at_or(std::string const& key, Value val) const noexcept;
+		Value			at_or(string_type const& key, Value val) const noexcept;
 		Value			at_or(size_type n, Value val) const noexcept;
 
-		Value&			operator[](std::string const& key)		 noexcept;
-		Value const&	operator[](std::string const& key) const noexcept;
+		Value&			operator[](string_type const& key)		 noexcept;
+		Value const&	operator[](string_type const& key) const noexcept;
 		Value&			operator[](size_type n)		 noexcept;
 		Value const&	operator[](size_type n) const noexcept;
 
@@ -140,20 +139,42 @@ class Value
 		bool_type	set(group_type const& group); // String assignment cannot guarantee a noexcept
 
 		Value	*group_addValue(Value const& val);
-
-		array_iterator			begin()			{ return _array.begin(); }
-		array_const_iterator	begin() const	{ return _array.begin(); }
-		array_iterator			end()			{ return _array.end(); }
-		array_const_iterator	end() const		{ return _array.end(); }
-		array_reverse_iterator			rbegin()			{ return _array.rbegin(); }
-		array_const_reverse_iterator	rbegin() const		{ return _array.rbegin(); }
-		array_reverse_iterator			rend()				{ return _array.rend(); }
-		array_const_reverse_iterator	rend() const		{ return _array.rend(); }
+		Value	*groupArray_addValue(Value const& val);
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
 };
 
 #include "Value.ipp"
+
+inline Value	make_int(Value::string_type const& key, Value::int_type x)
+{
+	return Value(key, x, TOML::T_INT);
+}
+
+inline Value	make_float(Value::string_type const& key, Value::float_type x)
+{
+	return Value(key, x, TOML::T_FLOAT);
+}
+
+inline Value	make_bool(Value::string_type const& key, Value::bool_type x)
+{
+	return Value(key, x, TOML::T_BOOL);
+}
+
+inline Value	make_string(Value::string_type const& key, Value::string_type const& str)
+{
+	return Value(key, str);
+}
+
+inline Value	make_array(Value::string_type const& key, TOML::Type array_type)
+{
+	return Value(key, array_type);
+}
+
+inline Value	make_group(Value::string_type const& key)
+{
+	return Value(key);
+}
 
 } // namespace TOML
 

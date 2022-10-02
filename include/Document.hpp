@@ -40,27 +40,34 @@ class Document
 {
 	public:
 		typedef	Value									value_type;
-		typedef std::size_t								size_type;
-		typedef std::ptrdiff_t							difference_type;
+		typedef Value::size_type						size_type;
+		typedef Value::difference_type					difference_type;
 		typedef	Value&									reference;
 		typedef	Value const&							const_reference;
 		typedef Value*									pointer;
 		typedef Value const*							const_pointer;
+
+		typedef Value::int_type			int_type;
+		typedef Value::float_type		float_type;
+		typedef Value::bool_type		bool_type;
+		typedef Value::string_type		string_type;
+		typedef Value::group_type		group_type;
+		typedef Value::array_type		array_type;
 		
 		// No iterators for now. They're in their own branch until I figure out wtf am I doing.
 
 	private:
 		Value			_root;
 		Value			*_currentGroup;
-		std::string		_path;
+		string_type		_path;
 		bool			_isParsed;
 
 	private:
-		typedef Value::string_type::const_iterator	str_const_it;
+		typedef string_type::const_iterator		str_const_it;
 		
 		static inline bool	_isSpace(char c) noexcept { return (c == 0x09 || c == 0x20); }
 		// Skips all whitespaces and comments
-		static inline void	_skipWhitespaces(std::string::const_iterator& it, std::string::const_iterator const& end) noexcept
+		static inline void	_skipWhitespaces(string_type::const_iterator& it, string_type::const_iterator const& end) noexcept
 		{
 			for (; it != end && _isSpace(*it); ++it) ;
 			if (*it == '#')
@@ -70,41 +77,42 @@ class Document
 		{
 			return isascii(c) && (isupper(c) || islower(c) || isdigit(c) || c == '-' || c == '_');
 		}
-		static TOML::Type	_guessValueType(std::string::const_iterator it, std::string::const_iterator const& end);
+		static TOML::Type	_guessValueType(str_const_it it, str_const_it const& end);
 		// Returns whether or not iterator range has got non-whitespace characters. Comments are ignored.
-		static inline bool	_hasNonWhitespace(std::string::const_iterator first, std::string::const_iterator const& last)
+		static inline bool	_hasNonWhitespace(str_const_it first, str_const_it const& last)
 		{
 			_skipWhitespaces(first, last);
 			return (first < last && *first != '#');
 		}
 		
-		void	_parseGroup(str_const_it it, std::string const& line, std::size_t lineNum);
-		void	_parseKeyValue(str_const_it it, std::string& line, std::size_t& lineNum, std::ifstream& fs);
+		void	_parseGroup(str_const_it it, string_type const& line, size_type lineNum);
+		void	_parseKeyValue(str_const_it it, string_type& line, size_type& lineNum, std::ifstream& fs);
 
 		// Simple types parsing
-		Value::int_type		_parseInt	(str_const_it it, str_const_it end, std::size_t lineNum) const;
-		Value::float_type	_parseFloat	(str_const_it it, str_const_it end, std::size_t lineNum) const;
-		Value::bool_type	_parseBool	(str_const_it it, str_const_it end, std::size_t lineNum) const;
+		Value::int_type		_parseInt	(str_const_it it, str_const_it end, size_type lineNum) const;
+		Value::float_type	_parseFloat	(str_const_it it, str_const_it end, size_type lineNum) const;
+		Value::bool_type	_parseBool	(str_const_it it, str_const_it end, size_type lineNum) const;
 
 		// String parsing
-		bool	_parseCompactEscapeSequence(std::string::iterator& it, std::string& raw_str, char escaped) const;
-		void	_parseEscapedUnicode(std::string::iterator& it, std::string& raw_str, std::size_t lineNum) const;
-		Value::string_type	_parseString(str_const_it it, str_const_it end, std::size_t lineNum) const;
+		bool	_parseCompactEscapeSequence(string_type::iterator& it, string_type& raw_str, char escaped) const;
+		void	_parseEscapedUnicode(string_type::iterator& it, string_type& raw_str, size_type lineNum) const;
+		Value::string_type	_parseString(str_const_it it, str_const_it end, size_type lineNum) const;
 
 		// Array parsing
 		str_const_it	_nextArrayVal(str_const_it it, str_const_it end) const;
 		str_const_it	_endofArrayIt(str_const_it it, str_const_it end) const;
-		str_const_it	_getNextArrayLine(str_const_it it, std::string& line, std::size_t& lineNum,
+		str_const_it	_getNextArrayLine(str_const_it it, string_type& line, size_type& lineNum,
 							std::ifstream& fs) const;
-		Value	_parseArray(std::string const& key, str_const_it& it, std::string& line,
-					std::size_t& lineNum, std::ifstream& fs) const;
+		Value	_parseArray(string_type const& key, str_const_it& it, string_type& line,
+					size_type& lineNum, std::ifstream& fs) const;
 		
 		// Group array parsing
-		Value	_parseGroupArray(str_const_it it, str_const_it end, std::size_t lineNum) const;
+		void	_parseGroupArray(str_const_it it, str_const_it end, size_type lineNum);
 	
 	public:
-		Document() : _root(Value("")), _currentGroup(&_root), _isParsed(false) {} // An empty key'd GROUP node is the root
-		Document(std::string const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		// An empty key'd group is the root
+		Document()						  : _root(Value("")),	_currentGroup(&_root), _path(),		_isParsed(false) {}
+		Document(string_type const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
 		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
 		Document(Value const& value)	  : _root(value),		_currentGroup(&_root), _path(),		_isParsed(true)
 		{
@@ -113,13 +121,13 @@ class Document
 		} 
 		~Document() {}
 
-		Value&			at(std::string const& key);
-		Value const&	at(std::string const& key) const;
-		Value			at_or(std::string const& key, Value) const noexcept;
-		Value&			operator[](std::string const& key)		 noexcept;
-		Value const&	operator[](std::string const& key) const noexcept;
+		Value&			at(string_type const& key);
+		Value const&	at(string_type const& key) const;
+		Value			at_or(string_type const& key, Value) const noexcept;
+		Value&			operator[](string_type const& key)		 noexcept;
+		Value const&	operator[](string_type const& key) const noexcept;
 
-		bool	parse(std::string const& path);
+		bool	parse(string_type const& path);
 		bool	parse();
 };
 

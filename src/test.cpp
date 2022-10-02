@@ -166,13 +166,13 @@ int	main(int argc, const char *argv[])
 		std::cout << test_a["simple1"][1] << std::endl;
 		std::cout << test_a["simple1"][2] << std::endl;
 
-		for (Value::array_iterator it = test_a["simple2"].begin(); it != test_a["simple2"].end(); ++it)
+		for (Value::array_type::iterator it = test_a["simple2"].Array().begin(); it != test_a["simple2"].Array().end(); ++it)
 			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
 
-		for (Value::array_iterator it = test_a["simple3"].begin(); it != test_a["simple3"].end(); ++it)
+		for (Value::array_type::iterator it = test_a["simple3"].Array().begin(); it != test_a["simple3"].Array().end(); ++it)
 			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
 
-		for (Value::array_iterator it = test_a["simple4"].begin(); it != test_a["simple4"].end(); ++it)
+		for (Value::array_type::iterator it = test_a["simple4"].Array().begin(); it != test_a["simple4"].Array().end(); ++it)
 			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
 	}
 	newtest("Array iterators");
@@ -181,10 +181,10 @@ int	main(int argc, const char *argv[])
 		doc.parse();
 		Document	test_a = doc["test"]["a"];
 
-		for (Value::array_iterator it = test_a["less-simple"].begin(); it != test_a["less-simple"].end(); ++it)
+		for (Value::array_type::iterator it = test_a["less-simple"].Array().begin(); it != test_a["less-simple"].Array().end(); ++it)
 			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
 		
-		for (Value::array_iterator it = test_a["wtf"].begin(); it != test_a["wtf"].end(); ++it)
+		for (Value::array_type::iterator it = test_a["wtf"].Array().begin(); it != test_a["wtf"].Array().end(); ++it)
 			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
 	}
 	newtest("Nested array operator[]");
@@ -203,19 +203,47 @@ int	main(int argc, const char *argv[])
 		std::cout << test_a["wtf"][0][1][0] << std::endl;
 		std::cout << test_a["wtf"][1][0][0] << std::endl;
 	}
+	newtest("Nested array operator[] editing");
+	{
+		Document	doc(argv[1]);
+		doc.parse();
+		Document	test_a = doc["test"]["a"];
+
+		for (Value::array_type::iterator it = test_a["less-simple"].Array().begin(); it != test_a["less-simple"].Array().end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+
+		test_a["less-simple"][0][0].Int() = 9;
+		test_a["less-simple"][0][1].Int() = 8;
+		test_a["less-simple"][0][2].Int() = 7;
+		test_a["less-simple"][1][0].Str() = "fizz";
+		test_a["less-simple"][1][1].Str() = "buzz";
+		test_a["less-simple"][1][2].Str() = "fizzbuzz";
+
+		std::cout << "===============================" << std::endl;
+
+		for (Value::array_type::iterator it = test_a["less-simple"].Array().begin(); it != test_a["less-simple"].Array().end(); ++it)
+			std::cout << P_TYPE( it->type() ) << "\t" << *it << std::endl;
+	}
 	if (argc >= 3)
 	{
-		newtest("Config file demo");
+		try
+		{
+			newtest("Config file demo");
 
-		Document	config(argv[2]);
-		config.parse();
+			Document	config(argv[2]);
+			config.parse();
 
-		std::cout << config["server"]["name"] << std::endl;
-		int port = config["server"]["port"].Int();
-		std::cout << "port: " << port << std::endl;
+			std::cout << config.at("server").at("name") << std::endl;
+			int port = config.at("server").at("port").Int();
+			std::cout << "port: " << port << std::endl;
 
-		Document	location(config.at("server").at("location"));
-		std::cout << "location: " << location["root"] << std::endl;
+			Document	location(config.at("server").at("location"));
+			std::cout << "location: " << location.at("root") << std::endl;
+		}
+		catch (std::out_of_range const& e)
+		{
+			std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
+		}
 	}
 	newtest("at_or()");
 	{
@@ -231,11 +259,50 @@ int	main(int argc, const char *argv[])
 		std::cout << doc["test"]["a"]["simple1"].at_or(0, Value("", 42, TOML::T_INT)) << std::endl;
 		std::cout << doc["test"]["a"]["simple1"].at_or(5, Value("", 42, TOML::T_INT)) << std::endl;
 	}
-	newtest();
+	newtest("Group array");
 	{
-		TOML::__detail::Array<Value>	test(TOML::T_INT);
+		Document	doc(argv[1]);
+		doc.parse();
 
-		std::cout << test.size() << std::endl;
+		std::cout << P_TYPE( doc["lexa"].type() ) << std::endl;
+		std::cout << doc["lexa"] << std::endl;
+
+		std::cout << "lexa[0]: " << std::endl;
+		std::cout << P_TYPE( doc["lexa"][0].type() ) << std::endl;
+		std::cout << doc["lexa"][0] << std::endl;
+
+		std::cout << "lexa[0][\"i\"]: " << std::endl;
+		std::cout << P_TYPE( doc["lexa"][0]["i"].type() ) << std::endl;
+		std::cout << doc["lexa"][0]["i"] << std::endl;
+	}
+	newtest("Group array 2");
+	if (argc >= 3)
+	{
+		Document	doc(argv[2]);
+		doc.parse();
+
+		std::cout << P_TYPE( doc["chacal"].type() ) << std::endl;
+		std::cout << doc["chacal"] << std::endl;
+		
+		std::cout << std::endl;
+
+		std::cout << P_TYPE( doc["lexa"].type() ) << std::endl;
+		std::cout << doc["lexa"] << std::endl;
+		
+		std::cout << std::endl;
+
+		std::cout << P_TYPE( doc["test"].type() ) << std::endl;
+		std::cout << doc["test"] << std::endl;
+		
+		std::cout << std::endl;
+
+		std::cout << P_TYPE( doc["test"][1]["sub"][0].type() ) << std::endl;
+		std::cout << doc["test"][1]["sub"][0] << std::endl;
+		
+		std::cout << std::endl;
+
+		std::cout << P_TYPE( doc["test"][1]["sub"][0]["toto"].type() ) << std::endl;
+		std::cout << doc["test"][1]["sub"][0]["toto"] << std::endl;
 	}
 	return 0;
 }

@@ -42,6 +42,8 @@ class Array : public std::vector<Val>
 		typedef typename	Val::difference_type			difference_type;
 
 		Array(TOML::Type type = TOML::T_UNDEF) : _type(type) {}
+
+		TOML::Type	type() const { return _type; }
 	
 	public:
 		inline iterator	insert(iterator pos, const value_type& val)
