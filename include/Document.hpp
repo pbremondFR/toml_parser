@@ -121,6 +121,8 @@ class Document
 		} 
 		~Document() {}
 
+		inline bool		has(string_type const& key) { return _root.has(key); }
+
 		Value&			at(string_type const& key);
 		Value const&	at(string_type const& key) const;
 		Value			at_or(string_type const& key, Value) const noexcept;

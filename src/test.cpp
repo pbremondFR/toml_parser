@@ -264,6 +264,8 @@ int	main(int argc, const char *argv[])
 		Document	doc(argv[1]);
 		doc.parse();
 
+		std::cout << doc.has("lexa") << std::endl;
+
 		std::cout << P_TYPE( doc["lexa"].type() ) << std::endl;
 		std::cout << doc["lexa"] << std::endl;
 
