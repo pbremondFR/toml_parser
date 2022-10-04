@@ -82,6 +82,7 @@ Value const&	Document::operator[](string_type const& key) const noexcept
 	return *it;
 }
 
+// Parse Document with toml file from path
 inline
 bool	Document::parse(string_type const& path)
 {
@@ -91,37 +92,54 @@ bool	Document::parse(string_type const& path)
 	return this->parse();
 }
 
+// Parse Document, only if path has been set before.
 inline
 bool	Document::parse()
 {
-	if (_isParsed)
+	if (_isParsed || _path.length() == 0)
 		return false;
 	
 	std::ifstream	fs(_path.c_str());
 	if (!fs.is_open())
 		throw std::runtime_error(strerror(errno));
 
+	_parseFromIstream(fs);
+	fs.close();
+	_isParsed = true;
+	return true;
+}
+
+inline
+bool	Document::parse(std::istream& stream)
+{
+	if (_isParsed == true)
+		return false;
+	_parseFromIstream(stream);
+	_isParsed = true;
+	return true;
+}
+
+inline
+void	Document::_parseFromIstream(std::istream& stream)
+{
 	size_type	lineNum = 1;
-	for (string_type line; std::getline(fs, line); ++lineNum)
+
+	for (string_type line; std::getline(stream, line); ++lineNum)
 	{
 		string_type::const_iterator	it = line.begin();
 		_skipWhitespaces(it, line.end());
 		if (it == line.end()) // ignore empty lines
 			continue;
-		
 		else if (*it == '[')
 		{
-			if (*(it + 1) == '[') // Group array
+			if (*(it + 1) == '[')
 				_parseGroupArray(it + 2, line.end(), lineNum);
 			else
 				_parseGroup(++it, line, lineNum);
 		}
-		// Insert quoted keys, groups tables, etc, here
 		else
-			_parseKeyValue(it, line, lineNum, fs);
+			_parseKeyValue(it, line, lineNum, stream);
 	}
-	_isParsed = true;
-	return true;
 }
 
 inline
@@ -171,7 +189,7 @@ void	Document::_parseGroup(string_type::const_iterator src_it, string_type const
 
 inline
 void	Document::_parseKeyValue(string_type::const_iterator src_it, string_type& line, size_type& lineNum,
-	std::ifstream& fs)
+	std::istream& fs)
 {
 	// Get the key
 	string_type::const_iterator	it = src_it;
@@ -360,7 +378,7 @@ Document::str_const_it	Document::_arr_getValueEndIt(str_const_it it, str_const_i
 
 inline
 Document::str_const_it	Document::_arr_getNextArrayLine(str_const_it it, string_type& line,
-	size_type& lineNum, std::ifstream& fs) const
+	size_type& lineNum, std::istream& fs) const
 {
 	std::getline(fs, line);
 	lineNum++;
@@ -372,7 +390,7 @@ Document::str_const_it	Document::_arr_getNextArrayLine(str_const_it it, string_t
 // Expects `it' to be pointing to a '['
 inline
 Value	Document::_parseArray(string_type const& key, str_const_it& it,
-	Value::string_type& line, Value::size_type& lineNum, std::ifstream& fs) const
+	Value::string_type& line, Value::size_type& lineNum, std::istream& fs) const
 {
 	_skipWhitespaces(++it, line.end()); // Skip first whitespaces in array
 	while (it == line.end()) // Skip empty/commented lines

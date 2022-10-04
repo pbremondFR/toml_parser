@@ -26,7 +26,7 @@ static std::string	centeredString(const std::string& src, std::size_t len)
 	return (out);
 }
 
-inline void	newtest(const char *description = NULL)
+static void	newtest(const char *description = NULL)
 {
 	static int	i = 1;
 	std::stringstream	header;
@@ -240,9 +240,9 @@ int	main(int argc, const char *argv[])
 			Document	location(config.at("server").at("location"));
 			std::cout << "location: " << location.at("root") << std::endl;
 		}
-		catch (std::out_of_range const& e)
+		catch (std::exception const& e)
 		{
-			std::cout << REDB"Caught std::out_of_range: " << e.what() << RESET << std::endl;
+			std::cout << REDB"Caught exception: " << e.what() << RESET << std::endl;
 		}
 	}
 	newtest("at_or()");
@@ -277,34 +277,51 @@ int	main(int argc, const char *argv[])
 		std::cout << P_TYPE( doc["lexa"][0]["i"].type() ) << std::endl;
 		std::cout << doc["lexa"][0]["i"] << std::endl;
 	}
-	newtest("Group array 2");
 	if (argc >= 3)
 	{
-		Document	doc(argv[2]);
-		doc.parse();
+		try
+		{
+			newtest("Group array 2");
+			Document	doc(argv[2]);
+			doc.parse();
 
-		std::cout << P_TYPE( doc["chacal"].type() ) << std::endl;
-		std::cout << doc["chacal"] << std::endl;
-		
-		std::cout << std::endl;
+			std::cout << P_TYPE( doc["chacal"].type() ) << std::endl;
+			std::cout << doc["chacal"] << std::endl;
+			
+			std::cout << std::endl;
 
-		std::cout << P_TYPE( doc["lexa"].type() ) << std::endl;
-		std::cout << doc["lexa"] << std::endl;
-		
-		std::cout << std::endl;
+			std::cout << P_TYPE( doc["lexa"].type() ) << std::endl;
+			std::cout << doc["lexa"] << std::endl;
+			
+			std::cout << std::endl;
 
-		std::cout << P_TYPE( doc["test"].type() ) << std::endl;
-		std::cout << doc["test"] << std::endl;
-		
-		std::cout << std::endl;
+			std::cout << P_TYPE( doc["test"].type() ) << std::endl;
+			std::cout << doc["test"] << std::endl;
+			
+			std::cout << std::endl;
 
-		std::cout << P_TYPE( doc["test"][1]["sub"][0].type() ) << std::endl;
-		std::cout << doc["test"][1]["sub"][0] << std::endl;
-		
-		std::cout << std::endl;
+			std::cout << P_TYPE( doc["test"][1]["sub"][0].type() ) << std::endl;
+			std::cout << doc["test"][1]["sub"][0] << std::endl;
+			
+			std::cout << std::endl;
 
-		std::cout << P_TYPE( doc["test"][1]["sub"][0]["toto"].type() ) << std::endl;
-		std::cout << doc["test"][1]["sub"][0]["toto"] << std::endl;
+			std::cout << P_TYPE( doc["test"][1]["sub"][0]["toto"].type() ) << std::endl;
+			std::cout << doc["test"][1]["sub"][0]["toto"] << std::endl;
+		}
+		catch(const std::exception& e)
+		{
+			std::cout << REDB"Caught exception: " << e.what() << RESET << std::endl;
+		}
+	}
+	if (argc >= 3 && std::string(argv[2]) == "stdin")
+	{
+		newtest("stdin");
+		{
+			Document	doc;
+			doc.parse(std::cin);
+
+			std::cout << doc["truc"] << std::endl;
+		}
 	}
 	return 0;
 }

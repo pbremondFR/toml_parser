@@ -84,9 +84,11 @@ class Document
 			_skipWhitespaces(first, last);
 			return (first < last && *first != '#');
 		}
+
+		void	_parseFromIstream(std::istream& stream);
 		
 		void	_parseGroup(str_const_it it, string_type const& line, size_type lineNum);
-		void	_parseKeyValue(str_const_it it, string_type& line, size_type& lineNum, std::ifstream& fs);
+		void	_parseKeyValue(str_const_it it, string_type& line, size_type& lineNum, std::istream& fs);
 
 		// Simple types parsing
 		Value::int_type		_parseInt	(str_const_it it, str_const_it end, size_type lineNum) const;
@@ -103,19 +105,19 @@ class Document
 		str_const_it	_arr_nextArrayVal(str_const_it it, str_const_it end, bool& expect_value) const;
 		str_const_it	_arr_getValueEndIt(str_const_it it, str_const_it end) const;
 		str_const_it	_arr_getNextArrayLine(str_const_it it, string_type& line, size_type& lineNum,
-							std::ifstream& fs) const;
+							std::istream& fs) const;
 		Value	_parseArray(string_type const& key, str_const_it& it, string_type& line,
-					size_type& lineNum, std::ifstream& fs) const;
+					size_type& lineNum, std::istream& fs) const;
 		
 		// Group array parsing
 		void	_parseGroupArray(str_const_it it, str_const_it end, size_type lineNum);
 	
 	public:
 		// An empty key'd group is the root
-		Document()						  : _root(Value("")),	_currentGroup(&_root), _path(),		_isParsed(false) {}
-		Document(string_type const& path) : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
-		Document(const char *path)		  : _root(Value("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
-		Document(Value const& value)	  : _root(value),		_currentGroup(&_root), _path(),		_isParsed(true)
+		Document()						  : _root(make_group("")),	_currentGroup(&_root), _path(),		_isParsed(false) {}
+		Document(string_type const& path) : _root(make_group("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document(const char *path)		  : _root(make_group("")),	_currentGroup(&_root), _path(path),	_isParsed(false) {}
+		Document(Value const& value)	  : _root(value),			_currentGroup(&_root), _path(),		_isParsed(true)
 		{
 			if (!value.isGroup())
 				throw bad_type("Tried constructing document from non-Group value");
@@ -131,6 +133,7 @@ class Document
 		Value const&	operator[](string_type const& key) const noexcept;
 
 		bool	parse(string_type const& path);
+		bool	parse(std::istream& stream);
 		bool	parse();
 };
 
