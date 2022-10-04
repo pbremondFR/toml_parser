@@ -281,7 +281,7 @@ void	Document::_parseEscapedUnicode(string_type::iterator& it, string_type& raw_
 	{
 		unsigned char unicode[3] = { 0b11000000, 0b10000000, 0x00 };
 		unicode[1] |= (code)		& 0b111111;
-		unicode[0] |= (code >> 6)	& 0b111111;
+		unicode[0] |= (code >> 6)	& 0b011111;
 		raw_str.replace(it, it + 6, reinterpret_cast<const char *>(unicode));
 	}
 	else // Three point unicode
@@ -289,7 +289,7 @@ void	Document::_parseEscapedUnicode(string_type::iterator& it, string_type& raw_
 		unsigned char unicode[4] = { 0b11100000, 0b10000000, 0b10000000, 0x00 };
 		unicode[2] |= (code)		& 0b111111;
 		unicode[1] |= (code >> 6)	& 0b111111;
-		unicode[0] |= (code >> 12)	& 0b111111;
+		unicode[0] |= (code >> 12)	& 0b001111;
 		raw_str.replace(it, it + 6, reinterpret_cast<const char *>(unicode));
 	}
 }
@@ -316,25 +316,50 @@ Value::string_type	Document::_parseString(str_const_it src_it, str_const_it end,
 	return (Value::string_type(newstr.begin(), it));
 }
 
+// Get an iterator to the next array value.
 inline
-Document::str_const_it	Document::_nextArrayVal(str_const_it it, str_const_it end) const
+Document::str_const_it	Document::_arr_nextArrayVal(str_const_it it, str_const_it end) const
 {
-	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
+	it = _arr_getValueEndIt(it, end);
 	if (*it == ',')
 		++it;
 	_skipWhitespaces(it, end);
 	return it;
 }
 
+// Get an iterator to the next array value. Sets the boolean "expect_value" to false if no coma was found.
 inline
-Document::str_const_it	Document::_endofArrayIt(str_const_it it, str_const_it end) const
+Document::str_const_it	Document::_arr_nextArrayVal(str_const_it it, str_const_it end, bool& expect_value) const
 {
-	for (; it != end && *it != ',' && *it != ']'; ++it) ; // Skip to next array value
+	expect_value = false;
+	it = _arr_getValueEndIt(it, end);
+	if (*it == ',') {
+		++it;
+		expect_value = true;
+	}
+	_skipWhitespaces(it, end);
+	return it;
+}
+
+// Returns an end iterator to the current array value, i.e. returns either ',' or the closing ']'
+// Correctly skips through strings
+inline
+Document::str_const_it	Document::_arr_getValueEndIt(str_const_it it, str_const_it end) const
+{
+	for (; it < end && *it != ',' && *it != ']'; ++it)
+	{
+		if (*it == '\"')
+		{
+			++it;
+			for (; it < end && !(*(it - 1) != '\\' && *(it) == '\"'); ++it) // Skip until end of string
+				;
+		}
+	}
 	return it;
 }
 
 inline
-Document::str_const_it	Document::_getNextArrayLine(str_const_it it, string_type& line,
+Document::str_const_it	Document::_arr_getNextArrayLine(str_const_it it, string_type& line,
 	size_type& lineNum, std::ifstream& fs) const
 {
 	std::getline(fs, line);
@@ -351,36 +376,30 @@ Value	Document::_parseArray(string_type const& key, str_const_it& it,
 {
 	_skipWhitespaces(++it, line.end()); // Skip first whitespaces in array
 	while (it == line.end()) // Skip empty/commented lines
-		it = _getNextArrayLine(it, line, lineNum, fs);
-	const TOML::Type	array_type = _guessValueType(it, _endofArrayIt(it, line.end()));
+		it = _arr_getNextArrayLine(it, line, lineNum, fs);
+	const TOML::Type	array_type = _guessValueType(it, _arr_getValueEndIt(it, line.end()));
 	assert(array_type != TOML::T_UNDEF);
 
 	Value	array(key, array_type);
-	while (*it != ']')
+	bool	expect_value = true;
+	while (*it != ']') // While array isn't closed
 	{
-		for (; it != line.end() && *it != ']'; it = _nextArrayVal(it, line.end()))
+		for (; it != line.end() && *it != ']'; it = _arr_nextArrayVal(it, line.end(), expect_value)) // Go through current array line
 		{
-			const TOML::Type	type = _guessValueType(it, _endofArrayIt(it, line.end()));
+			const str_const_it	value_end_it = _arr_getValueEndIt(it, line.end());
+			const TOML::Type	type = _guessValueType(it, value_end_it);
 			if (type != array_type)
 				throw parse_error("Array contains different types", lineNum);
-			switch (array_type)
+			switch (array_type) // Switch with array_type instead of type should allow compiler to optimize
 			{
 				case TOML::T_INT:
-					array.Array().push_back( Value( "",
-							_parseInt(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_INT ) );
-					break;
+					array.Array().push_back( make_int("", _parseInt(it, value_end_it, lineNum)) );			break;
 				case TOML::T_FLOAT:
-					array.Array().push_back( Value( "",
-							_parseFloat(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_FLOAT ) );
-					break;
+					array.Array().push_back( make_float("", _parseFloat(it, value_end_it, lineNum)) );		break;
 				case TOML::T_BOOL:
-					array.Array().push_back( Value( "",
-							_parseBool(it, _endofArrayIt(it, line.end()), lineNum), TOML::T_BOOL ) );
-					break;
+					array.Array().push_back( make_bool("", _parseBool(it, value_end_it, lineNum)) );		break;
 				case TOML::T_STRING:
-					array.Array().push_back( Value( "",
-							_parseString(it, _endofArrayIt(it, line.end()), lineNum) ) );
-					break;
+					array.Array().push_back( make_string("", _parseString(it, value_end_it, lineNum)) );	break;
 				case TOML::T_DATE:
 					; // TODO
 					break;
@@ -393,7 +412,11 @@ Value	Document::_parseArray(string_type const& key, str_const_it& it,
 			}
 		}
 		if (it == line.end()) // If at the end of line but no ']' yet
-			it = _getNextArrayLine(it, line, lineNum, fs);
+		{
+			it = _arr_getNextArrayLine(it, line, lineNum, fs);
+			if (expect_value == false && *it != ']')
+				throw parse_error("Missing coma in array", lineNum - 1);
+		}
 	}
 	return (array);
 }

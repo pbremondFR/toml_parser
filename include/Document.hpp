@@ -99,9 +99,10 @@ class Document
 		Value::string_type	_parseString(str_const_it it, str_const_it end, size_type lineNum) const;
 
 		// Array parsing
-		str_const_it	_nextArrayVal(str_const_it it, str_const_it end) const;
-		str_const_it	_endofArrayIt(str_const_it it, str_const_it end) const;
-		str_const_it	_getNextArrayLine(str_const_it it, string_type& line, size_type& lineNum,
+		str_const_it	_arr_nextArrayVal(str_const_it it, str_const_it end) const;
+		str_const_it	_arr_nextArrayVal(str_const_it it, str_const_it end, bool& expect_value) const;
+		str_const_it	_arr_getValueEndIt(str_const_it it, str_const_it end) const;
+		str_const_it	_arr_getNextArrayLine(str_const_it it, string_type& line, size_type& lineNum,
 							std::ifstream& fs) const;
 		Value	_parseArray(string_type const& key, str_const_it& it, string_type& line,
 					size_type& lineNum, std::ifstream& fs) const;

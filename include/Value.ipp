@@ -275,9 +275,13 @@ std::ostream&	operator<<(std::ostream& out, Value const& val)
 		}
 		case TOML::T_ARRAY:
 		{
+			const char *delim = (val._array.type() == T_STRING ? "\"" : ""); // Put double quotes around strings
 			out << '[';
 			for (Value::array_type::const_iterator it = val._array.begin(); it != val._array.end(); ++it)
-				out << *it << (it == val._array.end() - 1 ? "" : ", ");
+			{
+				out << delim << *it << delim
+					<< (it == val._array.end() - 1 ? "" : ", "); // Put coma after value except at end of array
+			}
 			out << ']';
 			break;
 		}
