@@ -212,7 +212,7 @@ Value::bool_type	Value::set(group_type const& group)
 }
 
 inline
-Value*	Value::group_addValue(Value const& val) // TESTME
+Value*	Value::group_addValue(Value const& val)
 {
 	if (!this->isGroup())
 		throw bad_type( (string_type("Called group_addValue() on a TOML::Value with type ")

@@ -132,8 +132,6 @@ class Value
 		Value&			operator[](size_type n)		 noexcept;
 		Value const&	operator[](size_type n) const noexcept;
 
-		// TODO: When an incorrect set method is called, should it throw, or should it return false ?
-		// NOTE: Ah fuck it's not typesafe at all
 		bool_type	set(float_type floating) noexcept;
 		bool_type	set(string_type const& string); // String assignment cannot guarantee a noexcept
 		bool_type	set(group_type const& group); // String assignment cannot guarantee a noexcept
