@@ -25,7 +25,7 @@ less-simple = [
 	["one", "two, \u2705 \"\"three", "three"]
 ]
 wtf = [
-	[ # FIXME: Below, coma is necessary
+	[
 		[0, 1],
 		[2, 3]
 	],

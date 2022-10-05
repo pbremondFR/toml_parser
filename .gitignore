@@ -14,10 +14,9 @@
 # Binaries
 *.out
 *.debug
+toml_test
 
 # Whatever
 *.txt
 *_old.cpp
 *_prout.cpp
-
-tests/

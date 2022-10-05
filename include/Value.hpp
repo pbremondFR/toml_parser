@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 16:19:34 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/05 18:14:52 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include "type_traits.hpp"
 # include "Array.hpp"
 # include "exceptions.hpp"
+# include "DocumentIterator.hpp"
 
 #include "ansi_color.h"
 
@@ -56,6 +57,8 @@ class Value
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
+		template <class T>
+		friend class __detail::DocumentIterator;
 
 		TOML::Type	_type; // Yes, it's not const anymore. DON'T TOUCH IT.
 		// Possible types that the value can be

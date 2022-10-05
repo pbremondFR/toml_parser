@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 14:55:57 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/05 20:07:05 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,12 @@
 #include <iterator>
 #include <errno.h>
 #include <cstring> // strerror
+#include <stack>
 
 #include "exceptions.hpp"
 #include "iterator.hpp"
 #include "Value.hpp"
+#include "DocumentIterator.hpp"
 
 #include "ansi_color.h"
 
@@ -54,7 +56,8 @@ class Document
 		typedef Value::group_type		group_type;
 		typedef Value::array_type		array_type;
 		
-		// No iterators for now. They're in their own branch until I figure out wtf am I doing.
+		typedef __detail::DocumentIterator<Value>			iterator;
+		// typedef __detail::DocumentIterator<const Value>		const_iterator;
 
 	private:
 		Value			_root;
@@ -135,6 +138,11 @@ class Document
 		bool	parse(string_type const& path);
 		bool	parse(std::istream& stream);
 		bool	parse();
+
+		iterator		begin()			{ return iterator(_root, _root._hashmap.begin());	}
+		// const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
+		iterator		end()		{ return iterator(_root, _root._hashmap.end());		}
+		// const_iterator	end() const	{ return const_iterator(_root, _root._hashmap.end());		}
 };
 
 // ============================================================================================== //
