@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 18:14:52 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/05 23:19:09 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,14 +130,16 @@ class Value
 		Value			at_or(string_type const& key, Value val) const noexcept;
 		Value			at_or(size_type n, Value val) const noexcept;
 
-		Value&			operator[](string_type const& key)		 noexcept;
+		Value&			operator[](string_type const& key)       noexcept;
 		Value const&	operator[](string_type const& key) const noexcept;
-		Value&			operator[](size_type n)		 noexcept;
+		Value&			operator[](size_type n)       noexcept;
 		Value const&	operator[](size_type n) const noexcept;
 
 		bool_type	set(float_type floating) noexcept;
 		bool_type	set(string_type const& string); // String assignment cannot guarantee a noexcept
 		bool_type	set(group_type const& group); // String assignment cannot guarantee a noexcept
+
+		bool	erase(string_type const& key);
 
 		Value	*group_addValue(Value const& val);
 		Value	*groupArray_addValue(Value const& val);

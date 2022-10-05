@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 13:22:25 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/05 23:18:59 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,21 @@ Value::bool_type	Value::set(group_type const& group)
 }
 
 inline
+bool	Value::erase(string_type const& key)
+{
+	std::vector<Value>::const_iterator it;
+	for (it = _hashmap.begin(); it != _hashmap.end(); ++it)
+	{
+		if (it->_key == key)
+		{
+			_hashmap.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
+
+inline
 Value*	Value::group_addValue(Value const& val)
 {
 	if (!this->isGroup())
@@ -228,8 +243,7 @@ Value*	Value::group_addValue(Value const& val)
 		}
 	}
 	_hashmap.push_back(val);
-	return (_hashmap.end() - 1).operator->();
-	// return &_hashmap.back();
+	return &_hashmap.back();
 }
 
 inline

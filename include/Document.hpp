@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 20:07:05 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/05 23:17:06 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,8 @@ class Document
 		Value			at_or(string_type const& key, Value) const noexcept;
 		Value&			operator[](string_type const& key)		 noexcept;
 		Value const&	operator[](string_type const& key) const noexcept;
+
+		inline bool		erase(string_type const& key) { return _root.erase(key); }
 
 		bool	parse(string_type const& path);
 		bool	parse(std::istream& stream);
