@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:30:12 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 23:50:06 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 00:00:56 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,13 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-void	print_recursive(TOML::Document const& doc, std::string ident = "- ")
+void	print_recursive(TOML::Document const& doc, std::string ident = "")
 {
 	for (Document::const_iterator it = doc.begin(); it != doc.end(); ++it)
 	{
 		if (it->isGroup()) {
-			std::cout << ident << "[" + it->key() + "]" << std::endl;
-			print_recursive(Document(*it));
+			cout << ident + '\t' << "[" + it->key() + "]" << endl;
+			print_recursive(Document(*it), ident + '\t');
 		}
 		else if (it->isArray() && it->Array().type() == T_GROUP)
 		{
@@ -38,7 +38,9 @@ void	print_recursive(TOML::Document const& doc, std::string ident = "- ")
 				arr_it != it->Array().end();
 				++arr_it)
 			{
+				cout << ident + '\t' << "[[" + it->key() + "]]" << endl;
 				print_recursive(Document(*arr_it), ident + '\t');
+				cout << endl;
 			}
 		}
 		else
@@ -95,6 +97,17 @@ int	iterator_tests(int argc, char const *argv[])
 		doc.parse();
 
 		print_recursive(doc);
+	}
+	newtest("Recursive iterators");
+	{
+		Document	doc(argv[2]);
+		doc.parse();
+
+		Document::recursive_iterator it = doc.rec_begin();
+		for (; it != doc.rec_end(); ++it)
+		{
+			cout << it->key() << " = " << *it << endl << endl;
+		}
 	}
 	return 0;
 }

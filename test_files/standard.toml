@@ -2,6 +2,7 @@
 # One we all agree on this, we'll all have to stick to its formatting. No deviating.
 # I'll start work on parsing everything on monday, after we discuss this and agree on a final design.
 
+# root_string = "hello"
 [http]
 include = ["mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
 
@@ -21,6 +22,8 @@ include = ["mime_types.toml"]		# All include directives are optional. Put whatev
 
 [hello]
 truc = "muche"
+[http.a]
+bool = true
 
 	[[http.server]]							# Is first server for this port, so is default.
 	listen_port = 4242
@@ -47,6 +50,7 @@ truc = "muche"
 
 	[[http.server]]
 	listen_port = 4242
+	listen_addr = ""
 	# This server has no server_name, so it's defaulted to [""].
 	# Instead of the default server, this server should thus
 	# match all requests with no "Host" field.

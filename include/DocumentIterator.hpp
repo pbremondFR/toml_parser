@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:11:33 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 20:07:48 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 21:39:52 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 
 #include <stack>
 #include <vector>
+
+#include <iostream>
+#include "ansi_color.h"
 
 namespace TOML
 {
@@ -33,8 +36,9 @@ class DocumentIterator
 		typedef typename	std::forward_iterator_tag			iterator_category;
 
 	private:
-		typedef typename	std::vector<T>::iterator									hashmap_iterator;
-		typedef typename	std::stack< std::pair<value_type&, hashmap_iterator> >		stack_type;
+		typedef typename	std::vector<T>::iterator					hashmap_iterator;
+		typedef typename	std::pair<value_type&, hashmap_iterator>	pair_type;
+		typedef typename	std::stack< pair_type >						stack_type;
 		
 		stack_type	_stack;
 
@@ -44,7 +48,21 @@ class DocumentIterator
 		DocumentIterator() {}
 		DocumentIterator(value_type& group_of_it, hashmap_iterator it)
 		{
-			_stack.push(std::pair<value_type&, hashmap_iterator>(group_of_it, it));
+			_stack.push(pair_type(group_of_it, it));
+			yolo:
+			while (_stack.top().second < _stack.top().first._hashmap.end()
+				&& _stack.top().second->type() == TOML::T_GROUP)
+			{
+				_stack.push( pair_type(_stack.top().second.operator*(),
+											_stack.top().second->_hashmap.begin()) );
+			}
+			while (_stack.size() > 1
+				&& _stack.top().second >= _stack.top().first._hashmap.end())
+			{
+				_stack.pop();
+				++(_stack.top().second);
+				goto yolo;
+			}
 		}
 		DocumentIterator(DocumentIterator const& src) : _stack(src._stack) {}
 		// template <class U>

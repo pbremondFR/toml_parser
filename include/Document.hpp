@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 19:05:07 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 21:17:18 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Document
 
 		typedef std::vector<Value>::iterator			iterator;
 		typedef std::vector<Value>::const_iterator		const_iterator;
+		typedef __detail::DocumentIterator<Value>		recursive_iterator;
 
 	private:
 		Value			_root;
@@ -153,6 +154,9 @@ class Document
 		const_iterator	begin() const	{ return _root._hashmap.begin();	}
 		iterator		end() 		{ return _root._hashmap.end();	}
 		const_iterator	end() const	{ return _root._hashmap.end();	}
+		
+		recursive_iterator		rec_begin()	{ return recursive_iterator(_root, _root._hashmap.begin());	}
+		recursive_iterator		rec_end()	{ return recursive_iterator(_root, _root._hashmap.end());	}
 
 };
 
