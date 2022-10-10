@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 13:52:14 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 23:18:59 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 23:47:04 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,7 @@ Value::bool_type	Value::set(group_type const& group)
 inline
 bool	Value::erase(string_type const& key)
 {
-	std::vector<Value>::const_iterator it;
+	std::vector<Value>::iterator it;
 	for (it = _hashmap.begin(); it != _hashmap.end(); ++it)
 	{
 		if (it->_key == key)

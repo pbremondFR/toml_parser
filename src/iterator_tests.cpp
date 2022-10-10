@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:30:12 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 20:08:00 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 23:50:06 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	print_recursive(TOML::Document const& doc, std::string ident = "- ")
 
 int	iterator_tests(int argc, char const *argv[])
 {
-	if (argc < 2) {
+	if (argc < 3) {
 		std::cerr << F_BRED("Bruh") << std::endl;
 		return 1;
 	}
