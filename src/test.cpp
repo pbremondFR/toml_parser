@@ -248,7 +248,7 @@ int	first_tests(int argc, const char *argv[])
 		std::cout << P_TYPE( doc["lexa"][0]["i"].type() ) << std::endl;
 		std::cout << doc["lexa"][0]["i"] << std::endl;
 	}
-	if (argc >= 3)
+	if (argc >= 3 && std::string(argv[2]) == "obj_array.toml")
 	{
 		try
 		{

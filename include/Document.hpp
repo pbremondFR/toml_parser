@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 23:17:06 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 19:05:07 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,11 @@ class Document
 		typedef Value::group_type		group_type;
 		typedef Value::array_type		array_type;
 		
-		typedef __detail::DocumentIterator<Value>			iterator;
+		// typedef __detail::DocumentIterator<Value>			iterator;
 		// typedef __detail::DocumentIterator<const Value>		const_iterator;
+
+		typedef std::vector<Value>::iterator			iterator;
+		typedef std::vector<Value>::const_iterator		const_iterator;
 
 	private:
 		Value			_root;
@@ -141,10 +144,16 @@ class Document
 		bool	parse(std::istream& stream);
 		bool	parse();
 
-		iterator		begin()			{ return iterator(_root, _root._hashmap.begin());	}
+		// iterator		begin()			{ return iterator(_root, _root._hashmap.begin());	}
 		// const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
-		iterator		end()		{ return iterator(_root, _root._hashmap.end());		}
+		// iterator		end()		{ return iterator(_root, _root._hashmap.end());		}
 		// const_iterator	end() const	{ return const_iterator(_root, _root._hashmap.end());		}
+
+		iterator		begin()			{ return _root._hashmap.begin();	}
+		const_iterator	begin() const	{ return _root._hashmap.begin();	}
+		iterator		end() 		{ return _root._hashmap.end();	}
+		const_iterator	end() const	{ return _root._hashmap.end();	}
+
 };
 
 // ============================================================================================== //
