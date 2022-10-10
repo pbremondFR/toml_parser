@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:11:33 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 21:39:52 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 23:41:44 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ class DocumentIterator
 				_stack.push( pair_type(_stack.top().second.operator*(),
 											_stack.top().second->_hashmap.begin()) );
 			}
-			while (_stack.size() > 1
+			if (_stack.size() > 1
 				&& _stack.top().second >= _stack.top().first._hashmap.end())
 			{
 				_stack.pop();
@@ -80,8 +80,16 @@ class DocumentIterator
 		inline reference	operator* () const { return _stack.top().second.operator*();	}
 		inline pointer		operator->() const { return _stack.top().second.operator->();	}
 
-		inline bool	operator==(DocumentIterator const& rhs) { return (_stack.top().second == rhs._stack.top().second); }
-		inline bool	operator!=(DocumentIterator const& rhs) { return (_stack.top().second != rhs._stack.top().second); }
+		inline bool	operator==(DocumentIterator const& rhs)
+		{
+			return (&_stack.top().first == &rhs._stack.top().first
+					&& _stack.top().second == rhs._stack.top().second);
+		}
+		inline bool	operator!=(DocumentIterator const& rhs)
+		{
+			return (&_stack.top().first != &rhs._stack.top().first
+					|| _stack.top().second != rhs._stack.top().second);
+		}
 };
 
 #include "DocumentIterator.ipp"

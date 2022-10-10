@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 23:19:09 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 22:26:31 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <vector>
 # include <typeinfo>
 # include <cassert>
-# include "type_traits.hpp"
+# include "ft_containers/type_traits.hpp"
 # include "Array.hpp"
 # include "exceptions.hpp"
 # include "DocumentIterator.hpp"

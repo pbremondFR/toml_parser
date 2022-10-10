@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 21:17:18 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 23:40:31 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 #include <stack>
 
 #include "exceptions.hpp"
-#include "iterator.hpp"
+#include "ft_containers/iterator.hpp"
 #include "Value.hpp"
 #include "DocumentIterator.hpp"
 
@@ -144,11 +144,6 @@ class Document
 		bool	parse(string_type const& path);
 		bool	parse(std::istream& stream);
 		bool	parse();
-
-		// iterator		begin()			{ return iterator(_root, _root._hashmap.begin());	}
-		// const_iterator	begin() const	{ return const_iterator(_root, _root._hashmap.begin());	}
-		// iterator		end()		{ return iterator(_root, _root._hashmap.end());		}
-		// const_iterator	end() const	{ return const_iterator(_root, _root._hashmap.end());		}
 
 		iterator		begin()			{ return _root._hashmap.begin();	}
 		const_iterator	begin() const	{ return _root._hashmap.begin();	}

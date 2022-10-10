@@ -6,7 +6,7 @@
 #    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/10/25 15:25:19 by pbremond          #+#    #+#              #
-#    Updated: 2022/10/10 21:41:34 by pbremond         ###   ########.fr        #
+#    Updated: 2022/10/10 22:18:56 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -92,7 +92,7 @@ CXX = clang++
 ifdef BONUS
 	CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98 -D BONUS
 else
-	CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98 #-fsanitize=address
+	CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
 endif
 
 mt:

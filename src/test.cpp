@@ -8,13 +8,16 @@
 #include "../include/Array.hpp"
 
 #include "tests.hpp"
+// #include "../include/ansi_color.h"
+// #include "../include/ansi_color.h"
+
 
 using namespace TOML; // yeah yeah I know, it's testing, gimme a break
 
 int	first_tests(int argc, const char *argv[])
 {
 	if (argc < 2) {
-		std::cerr << F_BRED("Bruh") << std::endl;
+		std::cerr << /* ft::F_BRED */("Bruh") << std::endl;
 		return 1;
 	}
 	newtest();

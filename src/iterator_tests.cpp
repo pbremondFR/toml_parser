@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:30:12 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/11 00:00:56 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 22:53:21 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,9 +104,11 @@ int	iterator_tests(int argc, char const *argv[])
 		doc.parse();
 
 		Document::recursive_iterator it = doc.rec_begin();
-		for (; it != doc.rec_end(); ++it)
+		Document::recursive_iterator end = doc.rec_end();
+		for (; it != doc.rec_end();)
 		{
 			cout << it->key() << " = " << *it << endl << endl;
+			++it;
 		}
 	}
 	return 0;

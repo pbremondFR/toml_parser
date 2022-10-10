@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:19:02 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 17:30:52 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/10 22:36:24 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+
+#include "../include/ansi_color.h"
 
 #ifndef P_TYPE
 # define P_TYPE(x) (TOML::typeToChar(x))
