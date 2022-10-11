@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/28 14:20:39 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 03:25:00 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,8 @@ void	Document::_parseFromIstream(std::istream& stream)
 
 	for (string_type line; std::getline(stream, line); ++lineNum)
 	{
+		string_type::iterator end_it = _getLineEndIt(line.begin(), line.end());
+		line.erase(end_it, line.end()); // TODO: Optimize, this might reallocate.
 		string_type::const_iterator	it = line.begin();
 		_skipWhitespaces(it, line.end());
 		if (it == line.end()) // ignore empty lines
@@ -334,6 +336,37 @@ Value::string_type	Document::_parseString(str_const_it src_it, str_const_it end,
 	return (Value::string_type(newstr.begin(), it));
 }
 
+// Returns an iterator corresponding to current line's end iterator or comment
+inline
+Document::string_type::iterator	Document::_getLineEndIt(string_type::iterator it, string_type::iterator end)
+{
+	for (; it < end && *it != '#'; ++it)
+	{
+		if (*it == '\"')
+		{
+			++it;
+			for (; it < end && !(*(it - 1) != '\\' && *(it) == '\"'); ++it) // Skip until end of string
+				;
+		}
+	}
+	return it;
+}
+
+inline
+Document::str_const_it	Document::_getLineEndIt(str_const_it it, str_const_it end)
+{
+	for (; it < end && *it != '#'; ++it)
+	{
+		if (*it == '\"')
+		{
+			++it;
+			for (; it < end && !(*(it - 1) != '\\' && *(it) == '\"'); ++it) // Skip until end of string
+				;
+		}
+	}
+	return it;
+}
+
 // Get an iterator to the next array value.
 inline
 Document::str_const_it	Document::_arr_nextArrayVal(str_const_it it, str_const_it end) const
@@ -382,6 +415,7 @@ Document::str_const_it	Document::_arr_getNextArrayLine(str_const_it it, string_t
 {
 	std::getline(fs, line);
 	lineNum++;
+	line.erase(_getLineEndIt(line.begin(), line.end()), line.end());
 	it = line.begin();
 	_skipWhitespaces(it, line.end());
 	return (it);
@@ -433,7 +467,7 @@ Value	Document::_parseArray(string_type const& key, str_const_it& it,
 		{
 			it = _arr_getNextArrayLine(it, line, lineNum, fs);
 			if (expect_value == false && *it != ']')
-				throw parse_error("Missing coma in array", lineNum - 1);
+				throw parse_error("Missing coma or `]' in array", lineNum - 1);
 		}
 	}
 	return (array);

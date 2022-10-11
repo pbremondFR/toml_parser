@@ -91,6 +91,8 @@ class Document
 			_skipWhitespaces(first, last);
 			return (first < last && *first != '#');
 		}
+		static str_const_it				_getLineEndIt(str_const_it it, str_const_it end);
+		static string_type::iterator	_getLineEndIt(string_type::iterator it, string_type::iterator end);
 
 		void	_parseFromIstream(std::istream& stream);
 		
