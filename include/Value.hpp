@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/11 01:57:36 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 05:40:42 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,25 +161,45 @@ inline Value	make_int(Value::string_type const& key, Value::int_type x)
 {
 	return Value(key, x, TOML::T_INT);
 }
+inline Value	make_int(Value::int_type x)
+{
+	return Value("", x, TOML::T_INT);
+}
 
 inline Value	make_float(Value::string_type const& key, Value::float_type x)
 {
 	return Value(key, x, TOML::T_FLOAT);
+}
+inline Value	make_float(Value::float_type x)
+{
+	return Value("", x, TOML::T_FLOAT);
 }
 
 inline Value	make_bool(Value::string_type const& key, Value::bool_type x)
 {
 	return Value(key, x, TOML::T_BOOL);
 }
+inline Value	make_bool(Value::bool_type x)
+{
+	return Value("", x, TOML::T_BOOL);
+}
 
 inline Value	make_string(Value::string_type const& key, Value::string_type const& str)
 {
 	return Value(key, str);
 }
+inline Value	make_string(Value::string_type const& str)
+{
+	return Value("", str);
+}
 
 inline Value	make_array(Value::string_type const& key, TOML::Type array_type)
 {
 	return Value(key, array_type);
+}
+inline Value	make_array(TOML::Type array_type)
+{
+	return Value("", array_type);
 }
 
 inline Value	make_group(Value::string_type const& key)
