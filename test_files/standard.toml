@@ -2,9 +2,9 @@
 # One we all agree on this, we'll all have to stick to its formatting. No deviating.
 # I'll start work on parsing everything on monday, after we discuss this and agree on a final design.
 
-# root_string = "hello"
+root_string = "hello"
 [http]
-include = ["mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
+include = ["test_files/include_me.toml"]		# All include directives are optional. Put whatever we need in there.
 
 	[[http.server]]
 	listen_port = 8080						# Mandatory parameter.
@@ -20,11 +20,6 @@ include = ["mime_types.toml"]		# All include directives are optional. Put whatev
 		# route = "/"
 		# root = "/var/www"
 
-[hello]
-truc = "muche"
-[http.a]
-bool = true
-
 	[[http.server]]							# Is first server for this port, so is default.
 	listen_port = 4242
 	server_name = ["c4r2p6.42nice.fr", "www.c4r2p6.42nice.fr",
@@ -36,7 +31,7 @@ bool = true
 		index = "index.html"					# Optional. Defaults to "index.html".
 		allowed_methods = ["POST", "GET"]		# Optional. Defaults to allow POST, GET, and DELETE.
 		dir_listing = true						# Optional. Defaults to false.
-		include = ["fast_cgi.toml"]
+		# include = ["fast_cgi.toml"]
 
 		[[http.server.location]]
 		route = "img"							# Points to /var/www/img, see NGINX doc
@@ -57,3 +52,8 @@ bool = true
 	# http://nginx.org/en/docs/http/request_processing.html
 	root = "./demo/www"
 	index = "index.html"
+
+[http.a]
+bool = true
+[hello]
+truc = "muche"

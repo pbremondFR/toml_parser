@@ -6,7 +6,7 @@
 #    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/10/25 15:25:19 by pbremond          #+#    #+#              #
-#    Updated: 2022/10/10 22:18:56 by pbremond         ###   ########.fr        #
+#    Updated: 2022/10/11 00:24:35 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -116,7 +116,7 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	@$(CXX) $(CXXFLAGS) -c $< -o $@ -I./$(INCLUDES)
 
 
-re: fclean mt
+re: fclean all
 
 bonus: fclean
 	@make BONUS=1 all

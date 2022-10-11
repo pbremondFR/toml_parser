@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 23:40:31 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 03:26:26 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,13 +55,11 @@ class Document
 		typedef Value::string_type		string_type;
 		typedef Value::group_type		group_type;
 		typedef Value::array_type		array_type;
-		
-		// typedef __detail::DocumentIterator<Value>			iterator;
-		// typedef __detail::DocumentIterator<const Value>		const_iterator;
 
-		typedef std::vector<Value>::iterator			iterator;
-		typedef std::vector<Value>::const_iterator		const_iterator;
-		typedef __detail::DocumentIterator<Value>		recursive_iterator;
+		typedef std::vector<Value>::iterator				iterator;
+		typedef std::vector<Value>::const_iterator			const_iterator;
+		typedef __detail::DocumentIterator<Value>			recursive_iterator;
+		// typedef __detail::DocumentIterator<const Value>		const_recursive_iterator; // Does not compile
 
 	private:
 		Value			_root;
