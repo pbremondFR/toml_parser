@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 19:27:37 by pbremond          #+#    #+#             */
-/*   Updated: 2022/09/27 02:50:33 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 03:46:01 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 // #include <memory>
 #include <stddef.h>
 #include "iterator_traits.hpp"
-#include "ansi_color.h"
 
 namespace ft
 {
