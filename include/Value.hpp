@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 00:57:16 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 22:26:31 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 01:57:36 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,9 @@ class Value
 		typedef 	std::string				string_type;
 		typedef		Value					group_type;
 		typedef		__detail::Array<Value>	array_type;
+
+		typedef		std::vector<Value>::const_iterator	const_group_iterator;
+		typedef		std::vector<Value>::iterator		group_iterator;
 
 	private:
 		friend class Document; // TODO: Remove me when everything is done, if possible
@@ -143,6 +146,11 @@ class Value
 
 		Value	*group_addValue(Value const& val);
 		Value	*groupArray_addValue(Value const& val);
+
+		group_iterator			group_begin()		{ return _hashmap.begin();	}
+		const_group_iterator	group_begin() const	{ return _hashmap.begin();	}
+		group_iterator			group_end()			{ return _hashmap.end();	}
+		const_group_iterator	group_end() const	{ return _hashmap.end();	}
 
 		friend std::ostream&	operator<<(std::ostream& out, Value const& val);
 };
