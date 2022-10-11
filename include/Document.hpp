@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/24 03:05:31 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/10 23:40:31 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 05:54:07 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ class Document
 		} 
 		~Document() {}
 
-		inline bool		has(string_type const& key) { return _root.has(key); }
+		inline bool		has(string_type const& key) const { return _root.has(key); }
 
 		Value&			at(string_type const& key);
 		Value const&	at(string_type const& key) const;
