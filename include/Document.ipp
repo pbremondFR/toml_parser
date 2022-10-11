@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/25 14:04:10 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/11 03:25:00 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 05:10:35 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,15 +210,25 @@ void	Document::_parseKeyValue(string_type::const_iterator src_it, string_type& l
 	switch (_guessValueType(it, line.end()))
 	{
 		case TOML::T_STRING:
-			_currentGroup->group_addValue( Value(key, _parseString(it, line.end(), lineNum)) ); break;
+			if (_currentGroup->group_addValue( Value(key, _parseString(it, line.end(), lineNum)) ) == NULL)
+				throw parse_error("Duplicate key", lineNum);
+			break;
 		case TOML::T_INT:
-			_currentGroup->group_addValue( Value(key, _parseInt(it, line.end(), lineNum), TOML::T_INT) ); break;
+			if (_currentGroup->group_addValue( Value(key, _parseInt(it, line.end(), lineNum), TOML::T_INT) ) == NULL)
+				throw parse_error("Duplicate key", lineNum);
+			break;
 		case TOML::T_FLOAT:
-			_currentGroup->group_addValue( Value(key, _parseFloat(it, line.end(), lineNum), TOML::T_FLOAT) ); break;
+			if (_currentGroup->group_addValue( Value(key, _parseFloat(it, line.end(), lineNum), TOML::T_FLOAT) ) == NULL)
+				throw parse_error("Duplicate key", lineNum);
+			break;
 		case TOML::T_BOOL:
-			_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), TOML::T_BOOL) ); break;
+			if (_currentGroup->group_addValue( Value(key, _parseBool(it, line.end(), lineNum), TOML::T_BOOL) ) == NULL)
+				throw parse_error("Duplicate key", lineNum);
+			break;
 		case TOML::T_ARRAY:
-			_currentGroup->group_addValue( _parseArray(key, it, line, lineNum, fs) ); break;
+			if (_currentGroup->group_addValue( _parseArray(key, it, line, lineNum, fs) ) == NULL)
+				throw parse_error("Duplicate key", lineNum);
+			break;
 		case TOML::T_DATE:
 			throw parse_error("Unsupported Date type");
 		default:
